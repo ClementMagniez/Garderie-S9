@@ -1,0 +1,10 @@
+<h1>{{ child.surname }} {{child.name}}</h1>
+<p>Responsable :  {{child.parent.surname}} {{child.parent.name}} </p>
+<p>Schedule :</p>
+<ul>
+{% for schedule in child.schedule_set.all %}
+	<li>{{schedule.arrival}} -- {{schedule.departure}}</li>
+{% endfor %}
+</ul>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+

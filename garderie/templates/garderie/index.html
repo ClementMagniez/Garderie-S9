@@ -1,0 +1,20 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+        <title>Acueil</title>
+</head>
+<body>
+        {% if children_list %}
+        <ul>
+        {% for child in children_list %}
+                <li><a href="{% url 'detail' child.id %}">{{child.surname}} {{child.name}}</a></li>
+        {% endfor %}
+        </ul>
+{% else %}
+        <p>Pas d'enfant enregistré</p>
+{% endif %}
+</body>
+</html>
+
+
