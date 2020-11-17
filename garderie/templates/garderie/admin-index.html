@@ -1,0 +1,23 @@
+{% extends 'garderie/base.html' %}
+
+{% block title %}Administration du site {% endblock %}
+
+{% block body %}
+
+	<table>
+		<tr>
+			<th>Parent</th>
+			<th>Enfants à charge</th>
+		</tr>
+		{% for parent in parent_list %}
+		<tr>
+			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.name }} {{ parent.surname }}</a></td> 
+			<td>
+				{% for child in parent.child_set.all %} 
+					<a href="{% url 'child_profile' child.id %}">{{ child.surname}}</a>
+			</td><td> {% endfor %} </td>
+		</tr>
+		{% endfor %}
+	</table>
+
+{% endblock %}

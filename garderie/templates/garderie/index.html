@@ -3,16 +3,18 @@
 {% block title %}Accueil{% endblock %}
 
 {% block body %}
+{% if user.is_staff %}
 
 	{% if children_list %}
 		<ul>
 		{% for child in children_list %}
-			<li><a href="{% url 'detail' child.id %}">{{child.surname}} {{child.name}}</a></li>
+			<li><a href="{% url 'child_profile' child.id %}">{{child.surname}} {{child.name}}</a></li>
 		{% endfor %}
 		</ul>
 	{% else %}
 		<p>Pas d'enfant enregistré</p>
 	{% endif %}
 
+{% endif %}
 {% endblock %}
 
