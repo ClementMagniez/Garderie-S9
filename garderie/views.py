@@ -12,7 +12,6 @@ class ListChildrenView(generic.ListView):
                 return Child.objects.all()
                 
 
-
 class DetailView(generic.DetailView):
         model=Child
         template_name='garderie/detail.html'
