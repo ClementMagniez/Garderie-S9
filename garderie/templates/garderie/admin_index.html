@@ -1,0 +1,11 @@
+{% extends 'garderie/base.html' %}
+
+{% block title %}Administration du site {% endblock %}
+
+{% block body %}
+
+<button><a href="{% url 'parent_list' %}">Liste des parents</a></button> 
+<button><a href="{% url 'add_parent' %}">Ajouter un parent</a></button> 
+<button><a href="{% url 'parent_list' %}">Liste des factures</a></button> 
+
+{% endblock %}

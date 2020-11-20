@@ -1,6 +1,6 @@
 {% extends 'garderie/base.html' %}
 
-{% block title %}Administration du site {% endblock %}
+{% block title %}Liste des parents{% endblock %}
 
 {% block body %}
 
@@ -11,7 +11,7 @@
 		</tr>
 		{% for parent in parent_list %}
 		<tr>
-			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.name }} {{ parent.surname }}</a></td> 
+			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.uid.first_name }} {{ parent.uid.last_name }}</a></td> 
 			<td>
 				{% for child in parent.child_set.all %} 
 					<a href="{% url 'child_profile' child.id %}">{{ child.surname}}</a>
@@ -19,5 +19,4 @@
 		</tr>
 		{% endfor %}
 	</table>
-
 {% endblock %}

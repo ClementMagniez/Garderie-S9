@@ -122,4 +122,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 ADMIN_ENABLED=False
 LOGIN_REDIRECT_URL='/index-redirect/'
-LOGOUT_REDIRECT_URL = '/index/'
+LOGOUT_REDIRECT_URL = '/login/'

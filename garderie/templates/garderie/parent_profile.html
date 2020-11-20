@@ -1,7 +1,7 @@
 {% extends 'garderie/base.html' %}
-{% block title %}Profil de {{ parent.surname}} {{parent.name}}{% endblock %}
+{% block title %}Profil de {{ parent.uid.first_name }} {{parent.uid.last_name}}{% endblock %}
 {% block body %} 
-<h1>{{ parent.surname }} {{parent.name}}</h1>
+<h1>{{ parent.uid.first_name }} {{parent.uid.last_name}}</h1>
 <p>Enfants :</p>
 <ul>
 {% for child in parent.child_set.all %}

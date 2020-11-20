@@ -5,14 +5,8 @@ import datetime
 
 class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
-	name=models.CharField(max_length=100, null=True)
-	surname=models.CharField(max_length=100, null=True)
-	phone=models.CharField(max_length=20, null=True)
-	mail=models.CharField(max_length=100, null=True)
+	phone=models.CharField(max_length=20, null=True) # on rajouera des champs plus tard
 
-	def __str__(self):
-		return self.surname+" "+self.name
-								
 class Child(models.Model):
 	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
 	name=models.CharField(max_length=100, null=True)
