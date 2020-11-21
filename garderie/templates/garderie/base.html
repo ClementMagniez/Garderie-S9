@@ -11,9 +11,9 @@
 	{% block header %}
 		{% if user.is_authenticated %}
 			<p>Connecté en tant que {{ user.first_name }} {{ user.last_name}}
-			<a href="{% url 'logout' %}"> -- Déconnexion</a>
+			-- <a href="{% url 'logout' %}"> Déconnexion</a>
 			{% if user.is_superuser %}
-			-- Admin</p>
+			-- <a href="{% url 'admin_index' %}"> Admin</a></p>
 			{% endif %}
 		{% else %}
 			<p><a href="{% url 'login' %}">Se connecter</a></p>

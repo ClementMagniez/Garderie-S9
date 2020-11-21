@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-
+from django.contrib.auth.models import User
 from .models import Child, Parent
 from .forms import NewUserForm
 from django.urls import reverse
@@ -11,21 +11,15 @@ class IndexRedirectView(generic.RedirectView):
 	def get_redirect_url(self, *args, **kwargs):
 		user=self.request.user
 		if user.is_superuser:
-			return reverse('admin_view')
+			return reverse('admin_index')
 #		elif user.is_staff:
-#			return reverse('educ_view')
+#			return reverse('educ_index')
 #		else:
-#			return reverse('parent_view')
+#			return reverse('parent_index')
 
 
-class AdminIndexView(generic.ListView):
+class AdminIndexView(generic.TemplateView):
 	template_name="garderie/admin_index.html"
-	context_object_name='parent_list'
-
-	def get_queryset(self): 
-		return Parent.objects.all()
-
-
 
 class ParentListView(generic.ListView):
 	template_name="garderie/parent_list.html"
@@ -52,19 +46,21 @@ class ParentProfileView(generic.DetailView):
 	template_name='garderie/parent_profile.html'
 
 
-# Essayer : utiliser FormView et tout save à la main
-
 class NewUserView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_user.html'
 	form_class = NewUserForm
 	success_url = '/parent/'
 
-	# Crée le parent ET l'utilisateur lié au parent par leur id commun 
-	def form_valid(self, form):
-#		self.object=form.save(commit=False)
+class ParentDeleteView(generic.edit.DeleteView):
+	template_name='garderie/parent_profile.html'
+	model = Parent
+	success_url = '/parent/'
 
-
-		return super().form_valid(form)
+	def delete(self, request, *args, **kwargs):
+		self.object=self.get_object()
+		User.objects.filter(id=self.object.uid_id).delete()
+		self.object.delete()
+		return HttpResponseRedirect(self.success_url)
 
 
 #	def get_context_data(self, **kwargs):

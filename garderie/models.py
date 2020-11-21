@@ -5,7 +5,7 @@ import datetime
 
 class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
-	phone=models.CharField(max_length=20, null=True) # on rajouera des champs plus tard
+	phone=models.CharField(max_length=20, null=True) # on rajoutera des champs plus tard
 
 class Child(models.Model):
 	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)

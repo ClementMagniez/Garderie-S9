@@ -2,6 +2,9 @@ from django import forms
 from .models import Parent 
 from django.contrib.auth.models import User
 
+import random
+import string
+
 # Sémantiqueemnt, on abuse un peu de ModelForm ici puisqu'on utilise un seul
 # field de Parent ; en réalité, on crée un User, qu'on wrap dans la création d'un Parent 
 # Concrètement, on économise les quelques lignes nécessaires à la création du Parent
@@ -18,7 +21,8 @@ class NewUserForm(forms.ModelForm):
 	def save(self, commit=True):
 		new_parent = super().save(commit=False)
 		if commit:
-			user=User.objects.create_user(username='tes1t', # TODO générer un username random
+			random_username=''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(6))
+			user=User.objects.create_user(username=random_username,
 																		first_name=self.data.get('first_name'),
 																		last_name=self.data.get('last_name'),
 																		password='test', # Users.objects.made_random_password()			
