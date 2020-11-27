@@ -12,14 +12,35 @@ class IndexRedirectView(generic.RedirectView):
 		user=self.request.user
 		if user.is_superuser:
 			return reverse('admin_index')
-#		elif user.is_staff:
-#			return reverse('educ_index')
-#		else:
-#			return reverse('parent_index')
+		elif user.is_staff:
+			return reverse('educ_index')
+		else:
+			return reverse('parent_index')
+
+class EducRedirectView(generic.RedirectView):
+	
+	def get_redirect_url(self, *args, **kwargs):
+		return reverse('children_list')
+
+class ParentRedirectView(generic.RedirectView):
+	
+	def get_redirect_url(self, *args, **kwargs):
+		user=self.request.user
+		return reverse('parent_profile', args=[user.id])		
 
 
 class AdminIndexView(generic.TemplateView):
 	template_name="garderie/admin_index.html"
+
+class ChildrenListView(generic.ListView):
+	template_name='garderie/children_list.html'
+	context_object_name='children_list'
+
+	def get_queryset(self):
+		return Child.objects.all()
+
+
+
 
 class ParentListView(generic.ListView):
 	template_name="garderie/parent_list.html"
@@ -29,12 +50,6 @@ class ParentListView(generic.ListView):
 		return Parent.objects.all()
 
 
-class ChildListView(generic.ListView):
-	template_name='garderie/children_list.html'
-	context_object_name='children_list'
-
-	def get_queryset(self):
-		return Child.objects.all()
 
 
 class ChildProfileView(generic.DetailView):
