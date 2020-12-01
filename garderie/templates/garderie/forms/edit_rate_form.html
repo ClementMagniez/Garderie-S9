@@ -1,0 +1,14 @@
+{% extends 'garderie/base.html' %}
+
+{% block title %}Modifier le taux horaire{% endblock %}
+
+{% block body %}
+  <form action="" method="post">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    </table>
+
+    <input type="submit" value="Submit">
+  </form>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django import forms
 from django.core.mail import send_mail
-from .models import Parent, Child 
+from .models import Parent, Child, Config
 from django.contrib.auth.models import User
 
 from django.conf import settings
@@ -53,3 +53,9 @@ class NewChildForm(forms.ModelForm):
 	class Meta:
 		model = Child
 		fields = [ 'parent', 'name', 'surname']
+		
+
+class EditHourlyRateForm(forms.ModelForm):
+	class Meta:
+		model = Config
+		fields = [ 'value']

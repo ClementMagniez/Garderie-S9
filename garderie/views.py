@@ -1,8 +1,8 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-from .models import Child, Parent
-from django.urls import reverse
+from .models import Child, Parent, Config
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 from .forms import *
 
@@ -31,6 +31,14 @@ class ParentRedirectView(generic.RedirectView):
 
 class AdminIndexView(generic.TemplateView):
 	template_name="garderie/admin_index.html"
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['hourlyrate'] = Config.objects.get(pk="hourlyrate")
+		return context
+
+
+
 
 class ChildrenListView(generic.ListView):
 	template_name='garderie/children_list.html'
@@ -67,13 +75,13 @@ class NewUserView(generic.edit.CreateView):
 class NewChildView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_child.html'
 	form_class = NewChildForm
-	success_url = '/enfant/' # TODO plutôt renvoyer sur le profil ?
+	success_url = reverse_lazy('children_list') # TODO plutôt renvoyer sur le profil ?
 	
 
 class ParentDeleteView(generic.edit.DeleteView):
 	template_name='garderie/parent_profile.html'
 	model = Parent
-	success_url = '/parent/'
+	success_url = reverse_lazy('parent_list')
 
 	def delete(self, request, *args, **kwargs):
 		self.object=self.get_object()
@@ -84,7 +92,14 @@ class ParentDeleteView(generic.edit.DeleteView):
 class ChildDeleteView(generic.edit.DeleteView):
 	template_name='garderie/child_profile.html'
 	model = Child
-	success_url = '/enfant/'
+	success_url = reverse_lazy('children_list')
+
+class HourlyRateEditView(generic.edit.UpdateView): # TODO voir si le nom est cohérent (selon la table Config)
+	template_name='garderie/forms/edit_rate_form.html'
+	model = Config 
+	fields=['value']
+	success_url = reverse_lazy('admin_index') # '/admin/accueil/'
+
 
 
 #	def get_context_data(self, **kwargs):
