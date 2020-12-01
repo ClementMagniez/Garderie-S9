@@ -16,12 +16,9 @@
 				<td>{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}</td>
 			{% endfor %}
 			<td> 
-				{% comment %} 
-					TODO : A faire
 				<form method="POST" action="{% url 'child_delete' child.id  %}">
-   				{% csrf_token %}<input type="submit" value="DELETE">
+   				{% csrf_token %}<input type="submit" value="SUPPRIMER">
 				</form>
-				{% endcomment %}
 			</td>
 		</tr>
 		{% endfor %}
