@@ -1,6 +1,6 @@
 from django import forms
 from django.core.mail import send_mail
-from .models import Parent 
+from .models import Parent, Child 
 from django.contrib.auth.models import User
 
 from django.conf import settings
@@ -47,3 +47,9 @@ class NewUserForm(forms.ModelForm):
 								'a@b.com', 
 								[user.email])
 		return new_parent
+		
+
+class NewChildForm(forms.ModelForm):
+	class Meta:
+		model = Child
+		fields = [ 'parent', 'name', 'surname']

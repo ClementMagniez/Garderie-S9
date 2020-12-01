@@ -2,9 +2,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 from .models import Child, Parent
-from .forms import NewUserForm
 from django.urls import reverse
 from django.views import generic
+from .forms import *
 
 class IndexRedirectView(generic.RedirectView):
 	
@@ -40,16 +40,12 @@ class ChildrenListView(generic.ListView):
 		return Child.objects.all()
 
 
-
-
 class ParentListView(generic.ListView):
 	template_name="garderie/parent_list.html"
 	context_object_name='parent_list'
 
 	def get_queryset(self):
 		return Parent.objects.all()
-
-
 
 
 class ChildProfileView(generic.DetailView):
@@ -65,6 +61,14 @@ class NewUserView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_user.html'
 	form_class = NewUserForm
 	success_url = '/parent/'
+	
+
+
+class NewChildView(generic.edit.CreateView):
+	template_name = 'garderie/forms/new_child.html'
+	form_class = NewChildForm
+	success_url = '/enfant/' # TODO plutôt renvoyer sur le profil ?
+	
 
 class ParentDeleteView(generic.edit.DeleteView):
 	template_name='garderie/parent_profile.html'
@@ -76,6 +80,11 @@ class ParentDeleteView(generic.edit.DeleteView):
 		User.objects.filter(id=self.object.uid_id).delete()
 		self.object.delete()
 		return HttpResponseRedirect(self.success_url)
+
+class ChildDeleteView(generic.edit.DeleteView):
+	template_name='garderie/child_profile.html'
+	model = Child
+	success_url = '/enfant/'
 
 
 #	def get_context_data(self, **kwargs):
