@@ -5,21 +5,47 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
    
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+  	.fakeimg {
+	    height: 200px;
+	    background: #aaa;
+  	}
+  </style>
 	<title>{% block title %}{% endblock %}</title>
 </head>
-<body>
-	{% block header %}
-		{% if user.is_authenticated %}
-			<p>Connecté en tant que {{ user.first_name }} {{ user.last_name}}
-			-- <a href="{% url 'logout' %}"> Déconnexion</a>
+
+<!-- NavBar -->
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+  <a class="navbar-brand" href="#">Accueil</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="collapsibleNavbar">
+    <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+			<div class="nav-link disabled"> Bonjour {{ user.first_name }} {{ user.last_name}} </div>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="{% url 'logout' %}">Se déconnecter</a>
+		</li>
 			{% if user.is_superuser %}
-			-- <a href="{% url 'admin_index' %}"> Admin</a></p>
+			<li class="nav-item">
+				<a class="nav-link" href="{% url 'admin_index' %}"> Accéder à la page admin </a> 
+			</li>
 			{% endif %}
 		{% else %}
-			<p><a href="{% url 'login' %}">Se connecter</a></p>
-		{% endif %}
-	{% endblock %}
-	
+			<a class="nav-link" href="{% url 'login' %}">Se connecter</a>
+		{% endif %}  
+    </ul>
+  </div>  
+</nav>
+
+<body>
 	{% block body %} {% endblock %}
 	{% block footer %} {% endblock %}
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
