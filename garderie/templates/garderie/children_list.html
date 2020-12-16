@@ -3,18 +3,24 @@
 {% block title %}Liste des enfants{% endblock %}
 
 {% block body %}
-
-	<table>
-		<tr>
+<div class="container">
+	{% if user.is_authenticated %}
+	<table class="table table-striped">
+		<thead class="thead-light">
 			<th>Enfant</th>
 			<th colspan=2>Horaires de présence</th>
-		</tr>
+		</thead>
 		{% for child in children_list %}
 		<tr>
-			<td><a href="{% url 'child_profile' child.id %}">{{child.surname}} {{child.name}}</a></td> 
-			{% for schedule in child.schedule_set.all %} 
-				<td>{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}</td>
-			{% endfor %}
+			<td><a href="{% url 'child_profile' child.id %}">{{child.surname}} {{child.name}}</a></td>
+			<td>
+				{% for schedule in child.schedule_set.all %} 
+					{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}
+					{% if forloop.revcounter > 1 %}
+					<br>
+					{% endif %}
+				{% endfor %}
+			</td>
 			<td> 
 				<form method="POST" action="{% url 'child_delete' child.id  %}">
    				{% csrf_token %}<input type="submit" value="SUPPRIMER">
@@ -23,4 +29,8 @@
 		</tr>
 		{% endfor %}
 	</table>
+	{% else %}
+		<p>Connectez-vous pour voir la liste des enfants</p>
+	{% endif %}
+</div>
 {% endblock %}
