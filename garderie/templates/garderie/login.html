@@ -2,10 +2,10 @@
 {% block header %}{% endblock %}
 {% block body %}
 <div class="container">
-{% if user.is_authenticated %}
- Vous êtes déjà connecté
-{% else %}
  <div class="d-flex justify-content-center">
+ 	{% if user.is_authenticated %}
+	 Vous êtes déjà connecté
+	{% else %}
 	<form method="post">
 		<h2>Connexion</h2>
 		{% csrf_token %}
