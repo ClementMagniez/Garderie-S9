@@ -1,10 +1,19 @@
 {% extends 'garderie/base.html' %}
 {% block header %}{% endblock %}
 {% block body %}
-	<h2>Login</h2>
+<div class="container">
+{% if user.is_authenticated %}
+ Vous êtes déjà connecté
+{% else %}
+ <div class="d-flex justify-content-center">
 	<form method="post">
+		<h2>Connexion</h2>
 		{% csrf_token %}
 		{{ form.as_p }}
-		<button type="submit">Login</button>
+		<button class="btn btn-primary btn-sm m-1" type="submit">Se connecter</button>
 	</form>
+	</div>
+  </div>
+{% endif %}
+</div>
 {% endblock %}
