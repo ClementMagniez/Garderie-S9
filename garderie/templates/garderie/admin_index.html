@@ -4,11 +4,68 @@
 
 {% block body %}
 
-<button><a href="{% url 'parent_list' %}">Liste des parents</a></button> 
-<button><a href="{% url 'children_list' %}">Liste des enfants</a></button> 
-<button><a href="{% url 'add_parent' %}">Ajouter un parent</a></button> 
-<button><a href="{% url 'add_child' %}">Ajouter un enfant</a></button> 
-<button><a href="{% url 'parent_list' %}">Liste des factures</a></button> 
-<button><a href="{% url 'hourly_rate_form' hourlyrate.key %}">Modifier le taux horaire</a></button> 
+<div class="container justify-content-around">
+ <div class="row pt-3">
+  <div class="col text-center">
+  	<ul class="list-group">
+  		<li class="list-group-item list-group-item-primary"> Parents </li>
+		<li class="list-group-item">
+			<a href="{% url 'parent_list' %}">
+				<button class="btn btn-outline-secondary">
+					Liste des parents
+				</button>
+			</a>
+		</li>
+		<li class="list-group-item">
+			<a href="{% url 'add_parent' %}">
+				<button class="btn btn-outline-secondary">
+					Ajouter un parent
+				</button>
+			</a>
+		</li>
+	</ul>
+  </div>
+
+  <div class="col text-center">
+  	<ul class="list-group">
+  		<li class="list-group-item list-group-item-success"> Enfants </li>
+		<li class="list-group-item">
+			<a href="{% url 'children_list' %}">
+				<button class="btn btn-outline-secondary">
+					Liste des enfants
+				</button>
+			</a>
+		</li>
+		<li class="list-group-item">
+			<a href="{% url 'add_child' %}">
+				<button class="btn btn-outline-secondary">
+					Ajouter un enfant
+				</button>
+			</a>
+		</li>
+	</ul>
+  </div>
+
+  <div class="col text-center">
+  	<ul class="list-group">
+  		<li class="list-group-item list-group-item-secondary"> Divers </li>
+		<li class="list-group-item">
+			<a href="{% url 'parent_list' %}">
+				<button class="btn btn-outline-secondary">
+					Liste des factures
+				</button>
+			</a>
+		</li>
+		<li class="list-group-item">
+			<a href="{% url 'hourly_rate_form' hourlyrate.key %}">
+				<button class="btn btn-outline-secondary">
+					Modifier le taux horaire
+				</button>
+			</a>
+		</li>
+	</ul>
+  </div>
+ </div>
+</div>
 
 {% endblock %}
