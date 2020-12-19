@@ -1,7 +1,7 @@
 {% extends 'garderie/base.html' %}
 {% block title %}Profil de {{ child.surname}} {{child.name}}{% endblock %}
 {% block body %} 
-<h1>{{ child.surname }} {{child.name}}</h1>
+<h1>{{ child.first_name }} {{child.last_name}}</h1>
 <p>Responsable :  {{child.parent.uid.first_name}} {{child.parent.uid.last_name}} </p>
 <p>Schedule :</p>
 <ul>

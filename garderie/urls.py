@@ -14,6 +14,6 @@ urlpatterns = [
         path('admin/accueil/', views.AdminIndexView.as_view(), name='admin_index'),
         path('educ-redirect/', views.EducRedirectView.as_view(), name='educ_index'),
         path('parent-redirect/', views.ParentRedirectView.as_view(), name='parent_index'),
-        path('admin/<slug:pk>', views.HourlyRateEditView.as_view(), name='hourly_rate_form'),
+        path('admin/tauxhoraire', views.NewHourlyRateView.as_view(), name='hourly_rate_form'),
 ]
 

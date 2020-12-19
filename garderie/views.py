@@ -1,11 +1,14 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-from .models import Child, Parent, Config
+from .models import Child, Parent, HourlyRate
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from .forms import *
 
+
+
+# Redirection après le login selon le type d'utilisateur
 class IndexRedirectView(generic.RedirectView):
 	
 	def get_redirect_url(self, *args, **kwargs):
@@ -17,11 +20,16 @@ class IndexRedirectView(generic.RedirectView):
 		else:
 			return reverse('parent_index')
 
+# TODO Voir s'il ne serait pas tout aussi simple de 
+# se débarrasser de EducRedirect et ParentRedirect
+
+# Redirection d'une éducatrice
 class EducRedirectView(generic.RedirectView):
 	
 	def get_redirect_url(self, *args, **kwargs):
 		return reverse('children_list')
 
+# Redirection d'un parent
 class ParentRedirectView(generic.RedirectView):
 	
 	def get_redirect_url(self, *args, **kwargs):
@@ -29,17 +37,13 @@ class ParentRedirectView(generic.RedirectView):
 		return reverse('parent_profile', args=[user.id])		
 
 
+
+# Accueil / panneau de contrôle de l'admin - statique et entièrement défini
+# par son HTML
 class AdminIndexView(generic.TemplateView):
 	template_name="garderie/admin_index.html"
 
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['hourlyrate'] = Config.objects.get(pk="hourlyrate")
-		return context
-
-
-
-
+# Liste des enfants, fournit au HTML tous les Child
 class ChildrenListView(generic.ListView):
 	template_name='garderie/children_list.html'
 	context_object_name='children_list'
@@ -47,7 +51,7 @@ class ChildrenListView(generic.ListView):
 	def get_queryset(self):
 		return Child.objects.all()
 
-
+# Liste des parents, fournit au HTML tous les Parent
 class ParentListView(generic.ListView):
 	template_name="garderie/parent_list.html"
 	context_object_name='parent_list'
@@ -56,28 +60,37 @@ class ParentListView(generic.ListView):
 		return Parent.objects.all()
 
 
+# Profil d'un enfant donné
 class ChildProfileView(generic.DetailView):
 	model=Child
 	template_name='garderie/child_profile.html'
 
+# Profil d'un parent donné
 class ParentProfileView(generic.DetailView):
 	model=Parent
 	template_name='garderie/parent_profile.html'
 
 
+# Formulaire de création d'un nouveau parent
 class NewUserView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_user.html'
 	form_class = NewUserForm
 	success_url = '/parent/'
 	
 
-
+# Formulaire de création d'un nouvel enfant
 class NewChildView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_child.html'
 	form_class = NewChildForm
 	success_url = reverse_lazy('children_list') # TODO plutôt renvoyer sur le profil ?
 	
+# Formulaire de création d'un nouveau taux horaire
+class NewHourlyRateView(generic.edit.CreateView):
+	template_name='garderie/forms/new_child.html'
+	form_class = NewHourlyRateForm
+	success_url = reverse_lazy('admin_index')
 
+# Formulaire de suppression d'un parent (et de l'utilisateur associé)
 class ParentDeleteView(generic.edit.DeleteView):
 	template_name='garderie/parent_profile.html'
 	model = Parent
@@ -89,16 +102,12 @@ class ParentDeleteView(generic.edit.DeleteView):
 		self.object.delete()
 		return HttpResponseRedirect(self.success_url)
 
+
+# Formulaire de suppression d'un enfant
 class ChildDeleteView(generic.edit.DeleteView):
 	template_name='garderie/child_profile.html'
 	model = Child
 	success_url = reverse_lazy('children_list')
-
-class HourlyRateEditView(generic.edit.UpdateView): # TODO voir si le nom est cohérent (selon la table Config)
-	template_name='garderie/forms/edit_rate_form.html'
-	model = Config 
-	fields=['value']
-	success_url = reverse_lazy('admin_index') # '/admin/accueil/'
 
 
 

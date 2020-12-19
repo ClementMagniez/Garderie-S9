@@ -14,7 +14,7 @@
 			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.uid.first_name }} {{ parent.uid.last_name }}</a></td> 
 			{% for child in parent.child_set.all %} 
 				<td>
-					<a href="{% url 'child_profile' child.id %}">{{ child.surname}}</a>
+					<a href="{% url 'child_profile' child.id %}">{{ child.first_name}}</a>
 				</td>
 			{% endfor %}
 			<td> 
