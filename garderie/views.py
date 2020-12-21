@@ -117,6 +117,10 @@ def AjaxChildUpdateArrival(request):
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
 	
+	last_schedule=child.schedule_set.latest('id')
+	if(last_schedule.departure==None):
+		return JsonResponse({'error': "L'enfant est déjà présent."})
+	
 	schedule=Schedule()
 	schedule.arrival=timezone.now()
 	schedule.child=child
@@ -136,7 +140,10 @@ def AjaxChildUpdateDeparture(request):
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
 	
-	schedule=Schedule.objects.all().filter(child=child_id).latest('id')
+	schedule=child.schedule_set.latest('id')
+	if(schedule.departure!=None):
+		return JsonResponse({'error': "L'enfant est déjà parti."})
+
 	schedule.departure=timezone.now()
 	schedule.save()
 	

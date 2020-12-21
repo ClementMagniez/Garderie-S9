@@ -16,10 +16,16 @@ $(document).ready(function() {
 			},
 			dataType: 'json',
 			success: function (data) {
-				let d=new Date(data['arrival'])
-				$("#table1").find("tbody")
-					.append(`<tr class='child_in' data-value=${child_id}><td>${data['name']}</td><td>${d.getHours()}:${d.getMinutes()}`)
-					.append("</td></tr>");					
+				
+				if(data['error'])
+					alert(data['error']);	
+				else {
+				
+					let d=new Date(data['arrival'])
+					$("#table1").find("tbody")
+						.append(`<tr class='child_in' data-value=${child_id}><td><a href="${child_id}">${data['name']}</a></td><td>${d.getHours()}:${d.getMinutes()}`)
+						.append("</td></tr>");					
+				}
 			}
 		});
 	});
@@ -37,15 +43,17 @@ $(document).ready(function() {
 			},
 			dataType: 'json',
 			success: function (data) {
-				let d=new Date(data['departure']);
-				$("#table1").find(`[data-value=${child_id}]`)
-					.find('td:last').after('<td>'+d.getHours()+':'+d.getMinutes()+'</td>');
+				if(data['error'])
+					alert(data['error']);
+				else {
+				
+					let d=new Date(data['departure']);
+					$("#table1").find(`[data-value=${child_id}]`)
+						.find('td:last').after('<td>'+d.getHours()+':'+d.getMinutes()+'</td>');
+				}
 			}
 		});
 	});
-
-
-
 
 });
 

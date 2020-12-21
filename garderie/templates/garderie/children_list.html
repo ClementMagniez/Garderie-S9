@@ -8,7 +8,8 @@
 <script>
 	var csrf="{{csrf_token}}";
 	var url_in="{% url 'ajax_arrival' %}";
-	var url_out="{% url 'ajax_departure' %}";</script>
+	var url_out="{% url 'ajax_departure' %}";
+</script>
 {% endblock %}
 {% block body %}
 <h1>Liste des enfants présents</h1>
@@ -40,17 +41,19 @@
 						{{child.first_name}} {{child.last_name}}
 				</a>
 			</td> 
-			{% for schedule in child.schedule_set.all %} 
-				{% if schedule.expected %}
-					<td>
-						{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}
-					</td>
-				{% endif %}
-			{% endfor %}
+			<td>
+				{% for schedule in child.schedule_set.all %} 
+					{% if schedule.expected %}
+							{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}
+							<br/>
+					{% endif %}
+				{% endfor %}
+			</td>
 			{% if user.is_superuser %}
 				<td> 
 					<form method="POST" action="{% url 'child_delete' child.id  %}">
-		 				{% csrf_token %}<input type="submit" value="SUPPRIMER">
+		 				{% csrf_token %}
+		 				<input type="submit" value="X">
 					</form>
 				</td>
 			{% endif %}
