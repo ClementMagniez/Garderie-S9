@@ -2,25 +2,60 @@
 
 {% block title %}Liste des enfants{% endblock %}
 
+{% load static %}
+{% block scripts %}
+<script src="{% static '/garderie/js/child_list.js/' %}"></script>
+<script>
+	var csrf="{{csrf_token}}";
+	var url_in="{% url 'ajax_arrival' %}";
+	var url_out="{% url 'ajax_departure' %}";</script>
+{% endblock %}
 {% block body %}
+<h1>Liste des enfants présents</h1>
+<table id="table1">
+	<thead>
+		<tr>
+			<th>Enfant</th>
+			<th>Arrivée</th>
+			<th>Départ</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
 
-	<table>
+<h1>Liste des enfants</h1>
+<table id="table2">
+	<thead>
 		<tr>
 			<th>Enfant</th>
 			<th colspan=2>Horaires de présence</th>
 		</tr>
+	</thead>
+	<tbody>
 		{% for child in children_list %}
 		<tr>
-			<td><a href="{% url 'child_profile' child.id %}">{{child.first_name}} {{child.last_name}}</a></td> 
+			<td class="child_out" data-value="{{child.id}}">
+				<a href="{% url 'child_profile' child.id %}">
+						{{child.first_name}} {{child.last_name}}
+				</a>
+			</td> 
 			{% for schedule in child.schedule_set.all %} 
-				<td>{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}</td>
+				{% if schedule.expected %}
+					<td>
+						{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}
+					</td>
+				{% endif %}
 			{% endfor %}
-			<td> 
-				<form method="POST" action="{% url 'child_delete' child.id  %}">
-   				{% csrf_token %}<input type="submit" value="SUPPRIMER">
-				</form>
-			</td>
+			{% if user.is_superuser %}
+				<td> 
+					<form method="POST" action="{% url 'child_delete' child.id  %}">
+		 				{% csrf_token %}<input type="submit" value="SUPPRIMER">
+					</form>
+				</td>
+			{% endif %}
 		</tr>
 		{% endfor %}
-	</table>
+	</tbody>
+</table>
 {% endblock %}

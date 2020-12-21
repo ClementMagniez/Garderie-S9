@@ -30,7 +30,7 @@ class Schedule(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE)
 	rate=models.ForeignKey(HourlyRate, on_delete=models.CASCADE, null=True)
 	arrival=models.DateTimeField('Heure d\'arrivée')
-	departure=models.DateTimeField('Heure de départ')
+	departure=models.DateTimeField('Heure de départ', null=True)
 	expected=models.BooleanField()
 	recurring=models.BooleanField(default=True)
 

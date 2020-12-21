@@ -1,11 +1,11 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-from .models import Child, Parent, HourlyRate
+from .models import Child, Parent, HourlyRate, Schedule
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from .forms import *
-
+from django.utils import timezone
 
 
 # Redirection après le login selon le type d'utilisateur
@@ -37,7 +37,6 @@ class ParentRedirectView(generic.RedirectView):
 		return reverse('parent_profile', args=[user.id])		
 
 
-
 # Accueil / panneau de contrôle de l'admin - statique et entièrement défini
 # par son HTML
 class AdminIndexView(generic.TemplateView):
@@ -50,6 +49,7 @@ class ChildrenListView(generic.ListView):
 
 	def get_queryset(self):
 		return Child.objects.all()
+	
 
 # Liste des parents, fournit au HTML tous les Parent
 class ParentListView(generic.ListView):
@@ -108,6 +108,43 @@ class ChildDeleteView(generic.edit.DeleteView):
 	template_name='garderie/child_profile.html'
 	model = Child
 	success_url = reverse_lazy('children_list')
+
+
+
+# Enregistre l'heure d'arrivée d'un enfant (TODO : validation (eg. s'il est déjà présent))
+def AjaxChildUpdateArrival(request):
+	child_id = request.POST.get('id', None)
+	child=Child.objects.filter(pk=child_id)[0]
+	child_name=child.first_name+" "+child.last_name
+	
+	schedule=Schedule()
+	schedule.arrival=timezone.now()
+	schedule.child=child
+	schedule.expected=False
+	schedule.rate=HourlyRate.objects.latest('id')
+	schedule.save()
+	
+	data = {
+	'name': child_name,
+	'arrival': schedule.arrival
+	}
+	return JsonResponse(data)
+
+# Enregistre l'heure de départ d'un enfant (TODO : validation (eg. s'il est déjà absent))
+def AjaxChildUpdateDeparture(request):
+	child_id = request.POST.get('id', None)
+	child=Child.objects.filter(pk=child_id)[0]
+	child_name=child.first_name+" "+child.last_name
+	
+	schedule=Schedule.objects.all().filter(child=child_id).latest('id')
+	schedule.departure=timezone.now()
+	schedule.save()
+	
+	data = {
+	'name': child_name,
+	'departure': schedule.departure
+	}
+	return JsonResponse(data)
 
 
 
