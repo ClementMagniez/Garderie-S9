@@ -48,7 +48,9 @@ class ChildrenListView(generic.ListView):
 	context_object_name='children_list'
 
 	def get_queryset(self):
-		return Child.objects.all()
+		return {'all_children': Child.objects.all(), 
+						'current_schedules': Schedule.objects.filter(departure=None) 
+					 }
 	
 
 # Liste des parents, fournit au HTML tous les Parent
@@ -111,16 +113,23 @@ class ChildDeleteView(generic.edit.DeleteView):
 
 
 
-# Enregistre l'heure d'arrivée d'un enfant (TODO : validation (eg. s'il est déjà présent))
+# Enregistre l'heure d'arrivée d'un enfant 
 def AjaxChildUpdateArrival(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
 	
-	last_schedule=child.schedule_set.latest('id')
-	if(last_schedule.departure==None):
-		return JsonResponse({'error': "L'enfant est déjà présent."})
 	
+	# check si l'enfant est encore présent (date de départ pas encore remplie)
+	# Une exception peut avoir lieu s'il n'y a aucun Schedule associé à l'enfant, 
+	# ce qui en ce qui nous concerne ici revient au meême : enfant pas encore là.
+	try:
+		last_schedule=child.schedule_set.latest('id')
+		if(last_schedule.departure==None):
+			return JsonResponse({'error': "L'enfant est déjà présent."})
+	except Schedule.DoesNotExist:
+		pass
+			
 	schedule=Schedule()
 	schedule.arrival=timezone.now()
 	schedule.child=child
@@ -134,16 +143,19 @@ def AjaxChildUpdateArrival(request):
 	}
 	return JsonResponse(data)
 
-# Enregistre l'heure de départ d'un enfant (TODO : validation (eg. s'il est déjà absent))
+# Enregistre l'heure de départ d'un enfant
 def AjaxChildUpdateDeparture(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
 	
-	schedule=child.schedule_set.latest('id')
-	if(schedule.departure!=None):
-		return JsonResponse({'error': "L'enfant est déjà parti."})
-
+	try: # TODO mériterait un logging (jamais censé arriver)
+		schedule=child.schedule_set.latest('id')
+		if(schedule.departure!=None):
+			return JsonResponse({'error': "L'enfant est déjà parti."})
+	except Schedule.DoesNotExist:
+		return JsonResponse({'error' : 'Erreur inconnue'})
+	
 	schedule.departure=timezone.now()
 	schedule.save()
 	

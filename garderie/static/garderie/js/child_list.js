@@ -20,7 +20,7 @@ $(document).ready(function() {
 				if(data['error'])
 					alert(data['error']);	
 				else {
-				
+
 					let d=new Date(data['arrival'])
 					$("#table1").find("tbody")
 						.append(`<tr class='child_in' data-value=${child_id}><td><a href="${child_id}">${data['name']}</a></td><td>${d.getHours()}:${d.getMinutes()}`)
