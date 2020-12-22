@@ -69,7 +69,7 @@ class ChildProfileView(generic.DetailView):
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['form'] = NewScheduleForm(initial={'child':self.object}, request=self.request)
+		context['form'] = NewScheduleForm(pk=self.kwargs['pk'])
 		return context
 
 # Profil d'un parent donné
@@ -79,7 +79,7 @@ class ParentProfileView(generic.DetailView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['form'] = NewChildFormParent(initial={'parent':self.object}, request=self.request)
+		context['form'] = NewChildFormParent(request=self.request)
 		return context
 	
 # Formulaire de création d'un schedule
@@ -88,16 +88,12 @@ class CreateScheduleView(generic.edit.CreateView):
 	
 	def get_form_kwargs(self):
 		kwargs=super().get_form_kwargs()
-		kwargs['request']=self.request
+		kwargs['pk']=self.kwargs['pk']
 		return kwargs
-
+			
 	def get_success_url(self):
-		return reverse('parent_profile', args=[self.request.user.id])
+		return reverse('child_profile', args=[self.kwargs['pk']])
 		
-#	def get_success_url(self):
-#		return reverse('children_list')
-#		return reverse('child_profile', args=[self.request.user.id])
-
 		
 # Formulaire de création d'un enfant par le parent
 class ParentCreateChildView(generic.edit.CreateView):

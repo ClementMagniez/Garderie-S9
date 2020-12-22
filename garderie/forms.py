@@ -85,13 +85,13 @@ class NewScheduleForm(forms.ModelForm):
 		fields = [ 'arrival', 'departure']
 
 	def __init__(self, *args, **kwargs):
-		self.test=kwargs.pop('request')
+		self.child=Child.objects.get(pk=kwargs.pop('pk'))
 		super().__init__(*args, **kwargs)
 
 	def save(self, commit=True):
 		schedule=super().save(commit=False)
 		if commit:
-			schedule.child_id=self.child_id
+			schedule.child=self.child
 			schedule.expected=True
 			schedule.save()
 		return schedule
