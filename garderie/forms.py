@@ -1,6 +1,6 @@
 from django import forms
 from django.core.mail import send_mail
-from .models import Parent, Child, HourlyRate
+from .models import Parent, Child, HourlyRate, Schedule
 from django.contrib.auth.models import User
 
 from django.conf import settings
@@ -52,11 +52,51 @@ class NewUserForm(forms.ModelForm):
 		return new_parent
 		
 
-class NewChildForm(forms.ModelForm):
+# Formulaire de création d'un enfant par un admin
+class NewChildFormAdmin(forms.ModelForm):
 	class Meta:
 		model = Child
 		fields = [ 'parent', 'first_name', 'last_name']
 
+# Formulaire de création d'un enfant par son parent 
+# Par rapport à NewChildFormAdmin, masque le champ "parent"
+# et le remplit automatiquement via l'utilisateur connecté
+class NewChildFormParent(forms.ModelForm):
+	class Meta:
+		model = Child
+		fields = ['first_name', 'last_name']
+
+	def __init__(self, *args, **kwargs):
+		self.request=kwargs.pop('request')
+		super().__init__(*args, **kwargs)
+
+	def save(self, commit=True):
+		child=super().save(commit=False)
+		if commit:
+			child.parent_id=self.request.user.id
+			child.save()
+		return child
+	
+	
+# Formulaire de création d'un Schedule pour un enfant donné
+class NewScheduleForm(forms.ModelForm):
+	class Meta:
+		model = Schedule
+		fields = [ 'arrival', 'departure']
+
+	def __init__(self, *args, **kwargs):
+		self.test=kwargs.pop('request')
+		super().__init__(*args, **kwargs)
+
+	def save(self, commit=True):
+		schedule=super().save(commit=False)
+		if commit:
+			schedule.child_id=self.child_id
+			schedule.expected=True
+			schedule.save()
+		return schedule
+	
+			
 
 class NewHourlyRateForm(forms.ModelForm):
 	class Meta:

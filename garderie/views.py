@@ -66,6 +66,11 @@ class ParentListView(generic.ListView):
 class ChildProfileView(generic.DetailView):
 	model=Child
 	template_name='garderie/child_profile.html'
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['form'] = NewScheduleForm(initial={'child':self.object}, request=self.request)
+		return context
 
 # Profil d'un parent donné
 class ParentProfileView(generic.DetailView):
@@ -74,16 +79,37 @@ class ParentProfileView(generic.DetailView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['form'] = NewChildForm(initial={'parent':self.object})
+		context['form'] = NewChildFormParent(initial={'parent':self.object}, request=self.request)
 		return context
-		
-class ParentCreateChildView(generic.edit.CreateView):
-	form_class=NewChildForm
 	
+# Formulaire de création d'un schedule
+class CreateScheduleView(generic.edit.CreateView):
+	form_class=NewScheduleForm
+	
+	def get_form_kwargs(self):
+		kwargs=super().get_form_kwargs()
+		kwargs['request']=self.request
+		return kwargs
+
 	def get_success_url(self):
 		return reverse('parent_profile', args=[self.request.user.id])
+		
+#	def get_success_url(self):
+#		return reverse('children_list')
+#		return reverse('child_profile', args=[self.request.user.id])
 
-
+		
+# Formulaire de création d'un enfant par le parent
+class ParentCreateChildView(generic.edit.CreateView):
+	form_class=NewChildFormParent
+	
+	def get_form_kwargs(self):
+		kwargs=super().get_form_kwargs()
+		kwargs['request']=self.request
+		return kwargs
+			
+	def get_success_url(self):
+		return reverse('parent_profile', args=[self.request.user.id])
 	
 
 # Formulaire de création d'un nouveau parent
@@ -94,11 +120,13 @@ class NewUserView(generic.edit.CreateView):
 	
 
 
-# Formulaire de création d'un nouvel enfant
+# Formulaire de création d'un nouvel enfant par l'admin
 class NewChildView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_child.html'
-	form_class = NewChildForm
+	form_class = NewChildFormAdmin
 	success_url = reverse_lazy('children_list') # TODO plutôt renvoyer sur le profil ?
+	
+	
 	
 # Formulaire de création d'un nouveau taux horaire
 class NewHourlyRateView(generic.edit.CreateView):
@@ -123,8 +151,9 @@ class ParentDeleteView(generic.edit.DeleteView):
 class ChildDeleteView(generic.edit.DeleteView):
 	template_name='garderie/child_profile.html'
 	model = Child
-	success_url = reverse_lazy('children_list')
-
+	
+	def get_success_url(self):
+		return self.request.GET.get('next', reverse('children_list'))
 
 
 # Enregistre l'heure d'arrivée d'un enfant 

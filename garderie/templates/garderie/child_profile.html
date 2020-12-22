@@ -1,14 +1,27 @@
 {% extends 'garderie/base.html' %}
-{% block title %}Profil de {{ child.surname}} {{child.name}}{% endblock %}
+{% block title %}Profil de {{ child.first_name}} {{child.last_name}}{% endblock %}
 {% block body %} 
 <h1>{{ child.first_name }} {{child.last_name}}</h1>
 <p>Responsable :  {{child.parent.uid.first_name}} {{child.parent.uid.last_name}} </p>
-<p>Schedule :</p>
+<p>Plages horaires prévues :</p>
 <ul>
 {% for schedule in child.schedule_set.all %}
+	{% if schedule.expected %}
 	<li>{{schedule.arrival}} -- {{schedule.departure}}</li>
+	{% endif %}
 {% endfor %}
 </ul>
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
+	<h3>Inscrire l'enfant à une nouvelle plage horaire</h3>
+	<form action="{% url 'child_register' child.id %}" method="POST">
+		{% csrf_token %}
+		<table>
+		{{ form.as_table }}
+		</table>
+
+		<input type="submit" value="Valider">
+	</form>
+{% endif %}
 
 {% endblock %}
