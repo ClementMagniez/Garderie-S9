@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 from .models import Child, Parent, HourlyRate, Schedule
 from django.urls import reverse, reverse_lazy
 from django.views import generic
-from .forms import *
 from django.utils import timezone
-
+from django.views.generic.detail import SingleObjectMixin
+from .forms import *
 
 # Redirection après le login selon le type d'utilisateur
 class IndexRedirectView(generic.RedirectView):
@@ -72,6 +72,19 @@ class ParentProfileView(generic.DetailView):
 	model=Parent
 	template_name='garderie/parent_profile.html'
 
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['form'] = NewChildForm(initial={'parent':self.object})
+		return context
+		
+class ParentCreateChildView(generic.edit.CreateView):
+	form_class=NewChildForm
+	
+	def get_success_url(self):
+		return reverse('parent_profile', args=[self.request.user.id])
+
+
+	
 
 # Formulaire de création d'un nouveau parent
 class NewUserView(generic.edit.CreateView):
@@ -79,6 +92,7 @@ class NewUserView(generic.edit.CreateView):
 	form_class = NewUserForm
 	success_url = '/parent/'
 	
+
 
 # Formulaire de création d'un nouvel enfant
 class NewChildView(generic.edit.CreateView):
