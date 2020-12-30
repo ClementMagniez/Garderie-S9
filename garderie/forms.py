@@ -2,7 +2,7 @@ from django import forms
 from django.core.mail import send_mail
 from .models import Parent, Child, HourlyRate, Schedule
 from django.contrib.auth.models import User
-
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
 
@@ -77,6 +77,7 @@ class NewChildFormParent(forms.ModelForm):
 			child.save()
 		return child
 	
+from django.contrib import messages
 	
 # Formulaire de création d'un Schedule pour un enfant donné
 class NewScheduleForm(forms.ModelForm):
@@ -92,10 +93,34 @@ class NewScheduleForm(forms.ModelForm):
 		schedule=super().save(commit=False)
 		if commit:
 			schedule.child=self.child
+			schedule.rate=HourlyRate.objects.all().latest('id')
 			schedule.expected=True
 			schedule.save()
 		return schedule
-	
+
+	# On valide que le nouveau schedule n'overlap pas un ancien
+	# Cas possibles : 
+	# le nouveau fait partir l'enfant après qu'un autre l'ait fait arriver
+	# un autre fait partir l'enfant après que le nouveau l'ait fait arriver
+	def clean(self):
+		cleaned_data = super().clean()
+		
+		new_arrival=cleaned_data.get('arrival')
+		new_departure=cleaned_data.get('departure')
+
+		if (new_arrival > new_departure):
+			raise ValidationError("Le départ est avant l'arrivée.")			
+		
+		all_schedules_child=Schedule.objects.filter(child_id=self.child.id)
+		for schedule in all_schedules_child:
+		
+			if (schedule.arrival >= new_arrival and schedule.arrival <=	new_departure)\
+		 	or (new_arrival <=	schedule.departure and new_arrival >= schedule.arrival):
+				print('erreur de validation')
+				print(f"new_arrival : {new_arrival} - comparaison : {schedule.arrival}")
+				print(f"new_departure : {new_departure} - comparaison : {schedule.departure}")
+				raise ValidationError("Le créneau voulu en chevauche un autre déjà existant.")
+		return self.cleaned_data
 			
 
 class NewHourlyRateForm(forms.ModelForm):

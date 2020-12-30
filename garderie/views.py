@@ -70,6 +70,7 @@ class ChildProfileView(generic.DetailView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['form'] = NewScheduleForm(pk=self.kwargs['pk'])
+		context['action']=reverse('schedule_register', kwargs={'pk':self.kwargs['pk']}) # même URL donc sûrement améliorable
 		return context
 
 # Profil d'un parent donné
@@ -85,16 +86,20 @@ class ParentProfileView(generic.DetailView):
 # Formulaire de création d'un schedule
 class CreateScheduleView(generic.edit.CreateView):
 	form_class=NewScheduleForm
-	
+	template_name='garderie/forms/embedded_form.html' # TODO TODO
 	def get_form_kwargs(self):
 		kwargs=super().get_form_kwargs()
 		kwargs['pk']=self.kwargs['pk']
 		return kwargs
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['action']=reverse('schedule_register', kwargs={'pk':self.kwargs['pk']}) # même URL donc sûrement améliorable
+		return context
 			
 	def get_success_url(self):
 		return reverse('child_profile', args=[self.kwargs['pk']])
-		
-		
+
 # Formulaire de création d'un enfant par le parent
 class ParentCreateChildView(generic.edit.CreateView):
 	form_class=NewChildFormParent
@@ -121,8 +126,7 @@ class NewChildView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_child.html'
 	form_class = NewChildFormAdmin
 	success_url = reverse_lazy('children_list') # TODO plutôt renvoyer sur le profil ?
-	
-	
+
 	
 # Formulaire de création d'un nouveau taux horaire
 class NewHourlyRateView(generic.edit.CreateView):
@@ -143,13 +147,23 @@ class ParentDeleteView(generic.edit.DeleteView):
 		return HttpResponseRedirect(self.success_url)
 
 
+# Formulaire de suppression d'un schedule
+class ScheduleDeleteView(generic.edit.DeleteView):
+#	template_name='garderie/child_garde	profile.html'
+	model = Schedule
+	
+	def get_success_url(self):
+		return self.request.GET.get('next', reverse('children_list')) # évite un changement de page
+
+
+
 # Formulaire de suppression d'un enfant
 class ChildDeleteView(generic.edit.DeleteView):
 	template_name='garderie/child_profile.html'
 	model = Child
 	
 	def get_success_url(self):
-		return self.request.GET.get('next', reverse('children_list'))
+		return self.request.GET.get('next', reverse('children_list')) # évite un changement de page
 
 
 # Enregistre l'heure d'arrivée d'un enfant 
@@ -157,29 +171,54 @@ def AjaxChildUpdateArrival(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
-	
-	
-	# check si l'enfant est encore présent (date de départ pas encore remplie)
-	# Une exception peut avoir lieu s'il n'y a aucun Schedule associé à l'enfant, 
-	# ce qui en ce qui nous concerne ici revient au meême : enfant pas encore là.
-	try:
-		last_schedule=child.schedule_set.latest('id')
-		if(last_schedule.departure==None):
-			return JsonResponse({'error': "L'enfant est déjà présent."})
-	except Schedule.DoesNotExist:
-		pass
-			
+					
 	schedule=Schedule()
 	schedule.arrival=timezone.now()
 	schedule.child=child
 	schedule.expected=False
 	schedule.rate=HourlyRate.objects.latest('id')
 	schedule.save()
-	
+
+
 	data = {
 	'name': child_name,
 	'arrival': schedule.arrival
 	}
+	
+	# check si l'enfant est encore présent (date de départ pas encore remplie)
+	# Une exception peut avoir lieu s'il n'y a aucun Schedule associé à l'enfant, 
+	# ce qui en ce qui nous concerne ici revient au même : enfant pas encore là.
+	try:
+		last_schedule=child.schedule_set.filter(expected=True).latest('id')
+		if(last_schedule.departure==None):
+			return JsonResponse({'error': "L'enfant est déjà présent."})
+	except Schedule.DoesNotExist:
+		pass
+	
+	
+	# Récupère le schedule pré-enregistré pour cette période : 
+	# on le récupère à la main en calculant le schedule dont l'arrivée est la
+	# plus proche de l'arrivée réelle
+	# TODO : mettre des failsafes (aka annuler si la différence fait plus d'un jour)
+	greater=child.schedule_set.filter(expected=True, arrival__gte=schedule.arrival).order_by('arrival').first()
+	lesser=child.schedule_set.filter(expected=True, arrival__lte=schedule.arrival).order_by('-arrival').first()
+	expected_arrival, expected_departure=None, None
+	
+	if greater and lesser:
+		if abs(greater.arrival-schedule.arrival) < abs(lesser.arrival - schedule.arrival):
+			expected_arrival=greater.arrival
+			expected_departure=greater.departure
+		else: 
+			expected_arrival=lesser.arrival
+			expected_departure=lesser.departure
+	else:
+			expected_arrival=greater.arrival if greater else lesser.arrival
+			expected_departure=greater.departure if greater else lesser.departure
+		
+	data['expected_arrival']=expected_arrival
+	data['expected_departure']=expected_departure
+
+
 	return JsonResponse(data)
 
 # Enregistre l'heure de départ d'un enfant

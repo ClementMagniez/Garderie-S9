@@ -1,0 +1,14 @@
+{% load static %}
+{% include 'garderie/include/base_scripts.html' %}
+{% block scripts %}
+	<script src="{% static 'garderie/js/embedded_form.js' %}"></script>
+	
+{% endblock %}
+<form class="embedded_form" action="{{ action }}" method="post">
+		{% csrf_token %}
+	<table>
+
+		{{ form.as_table }}
+	</table>	
+	<input type="submit" value="Submit">
+</form>

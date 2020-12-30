@@ -19,6 +19,8 @@
 			<th>Enfant</th>
 			<th>Arrivée</th>
 			<th>Départ</th>
+			<th>Arrivée prévue</th>
+			<th>Départ prévu</th>
 		</tr>
 	</thead>
 		{% for schedule in children_list.current_schedules %}
@@ -31,6 +33,12 @@
 					</td> 
 					<td>
 					{{schedule.arrival |date:"G:i"}}
+					</td>
+					<td>
+						{{expected_arrival|date:"G:i"}}
+					</td>
+					<td>
+						{{expected_departure|date:"G:i"}}
 					</td>
 				</tr>
 			{% endwith %}

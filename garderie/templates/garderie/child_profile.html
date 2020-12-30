@@ -1,27 +1,29 @@
 {% extends 'garderie/base.html' %}
 {% block title %}Profil de {{ child.first_name}} {{child.last_name}}{% endblock %}
+
 {% block body %} 
+
 <h1>{{ child.first_name }} {{child.last_name}}</h1>
 <p>Responsable :  {{child.parent.uid.first_name}} {{child.parent.uid.last_name}} </p>
 <p>Plages horaires prévues :</p>
 <ul>
 {% for schedule in child.schedule_set.all %}
-	{% if schedule.expected %}
-	<li>{{schedule.arrival}} -- {{schedule.departure}}</li>
+	{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
+		{% if schedule.expected %}
+			<li>
+				<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
+					{% csrf_token %}
+					<input type="submit" value="x"> {{schedule.arrival}} -- {{schedule.departure}}
+				</form>
+			</li>
+		{% endif %}
 	{% endif %}
 {% endfor %}
 </ul>
 
 {% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
-	<h3>Inscrire l'enfant à une nouvelle plage horaire</h3>
-	<form action="{% url 'child_register' child.id %}" method="POST">
-		{% csrf_token %}
-		<table>
-		{{ form.as_table }}
-		</table>
-
-		<input type="submit" value="Valider">
-	</form>
+	<h3>Inscrire {{child.first_name}} à une nouvelle plage horaire</h3>
+	{% include 'garderie/forms/embedded_form.html' with action=action %}
 {% endif %}
 
 {% endblock %}

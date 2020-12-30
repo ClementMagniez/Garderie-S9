@@ -1,8 +1,6 @@
 $(document).ready(function() {
-	console.log(csrf);
 
-	// enfants absents : au clic, les ajoute à table_in et crée un Schedule avec
-	// leur date d'arrivée
+	// enfants absents : au clic, envoie en AJA 
 	
 	$('.child_out').click( function() {
 		child_id=$(this).data("value");
@@ -21,10 +19,11 @@ $(document).ready(function() {
 					alert(data['error']);	
 				else {
 
-					let d=new Date(data['arrival'])
-					$("#table1").find("tbody")
-						.append(`<tr class='child_in' data-value=${child_id}><td><a href="${child_id}">${data['name']}</a></td><td>${d.getHours()}:${d.getMinutes()}`)
-						.append("</td></tr>");					
+					let arrival=new Date(data['arrival']);
+					let expected_arrival=new Date(data['expected_arrival']);
+					let expected_departure=new Date(data['expected_departure']);
+					$("#table1").find("tbody") // TODO TODO TODO
+						.append(`<tr class='child_in' data-value=${child_id}><td><a href="${child_id}">${data['name']}</a></td><td>${arrival.getHours()}:${arrival.getMinutes()}</td><td></td><td>${expected_arrival.getHours()}:${expected_arrival.getMinutes()}</td>><td>${expected_departure.getHours()}:${expected_departure.getMinutes()}</td></tr>`);					
 				}
 			}
 		});
@@ -49,7 +48,7 @@ $(document).ready(function() {
 				
 					let d=new Date(data['departure']);
 					$("#table1").find(`[data-value=${child_id}]`)
-						.find('td:last').after('<td>'+d.getHours()+':'+d.getMinutes()+'</td>');
+						.find('td:nth-child(3)').append(d.getHours()+':'+d.getMinutes());
 				}
 			}
 		});
