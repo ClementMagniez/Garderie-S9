@@ -12,6 +12,7 @@
 </script>
 {% endblock %}
 {% block body %}
+
 <h1>Liste des enfants présents</h1>
 <table id="table1">
 	<thead>
@@ -25,21 +26,40 @@
 	</thead>
 		{% for schedule in children_list.current_schedules %}
 			{% with child=schedule.child %}
+
 				<tr class="child_in" data-value="{{child.id}}">
 					<td>
 						<a href="{% url 'child_profile' child.id %}">
-								{{child.first_name}} {{child.last_name}}
+								{{child.fullname}}
 						</a>
 					</td> 
 					<td>
-					{{schedule.arrival |date:"G:i"}}
+					{{schedule.arrival |default_if_none:''|date:"G:i"}}
 					</td>
 					<td>
-						{{expected_arrival|date:"G:i"}}
+					</td>
+					
+					{% comment %}
+					Rédaction circonvolue puisque le null check de default_if_none ne cascade pas :
+					on doit check individuellement .arrival et .departure, on enregistre
+					donc closest_to_incomplete dans une variable
+					{% endcomment %}
+					{% with closest=child.closest_to_incomplete %}
+					<td>
+						{% if closest %}
+							{{closest.arrival}}
+						{% else %}
+							N/A
+						{% endif %}
 					</td>
 					<td>
-						{{expected_departure|date:"G:i"}}
+						{% if closest %}
+							{{closest.departure}}
+						{% else %}
+							N/A
+						{% endif %}
 					</td>
+					{% endwith%} 
 				</tr>
 			{% endwith %}
 		{% endfor %}
@@ -60,7 +80,7 @@
 		<tr class="child_out" data-value="{{child.id}}">
 			<td>
 				<a href="{% url 'child_profile' child.id %}">
-						{{child.first_name}} {{child.last_name}}
+						{{child.fullname}}
 				</a>
 			</td> 
 			<td>

@@ -1,6 +1,36 @@
 $(document).ready(function() {
+		
 
-	// enfants absents : au clic, envoie en AJA 
+	// transforme un string aaaa-MM-jj hh:mm:ss en hh:mm
+	// ne valide pas str au préalable ; on ne manipule revanche rien s'il fait
+	// moins de 10 caractères (valeur arbitraire en-dessous de laquelle 
+	// on considère que str est un placeholder)
+	function formattedDateFromString(str) {
+		// TODO : fonctionnel mais pas du tout future-proof
+		if(str.length>10)
+			return str.slice(11, 16);
+		else
+			return str
+	}
+
+	// A partir d'un map data contenant des dates 'arrival, 'expected_arrival' 
+	// et 'expected_departure' au format aaaa-MM-jj hh:mm:ss, 
+	// ainsi qu'un string 'name', ajoute une entrée à #table1 affichant ces infos
+	function addChildRow(data, child_id) {
+		let arrival=data['arrival'];
+		let expected_arrival=data['expected_arrival'];
+		let expected_departure=data['expected_departure'];
+		let table=$("#table1").find("tbody");
+		table=table.append(`<tr class='child_in' data-value=${child_id}>\
+			<td><a href="${child_id}">${data['name']}</a></td>\
+			<td>${formattedDateFromString(arrival)}</td>\
+			<td></td>\ 
+			<td>${formattedDateFromString(expected_arrival)}</td>\
+			<td>${formattedDateFromString(expected_departure)}</td></tr>`);
+	}
+
+	// enfants absents : au clic, envoie (async) l'id de l'enfant cliqué
+	// une fois le Schedule ajouté, appelle addChildRow avec les données reçues
 	
 	$('.child_out').click( function() {
 		child_id=$(this).data("value");
@@ -17,19 +47,13 @@ $(document).ready(function() {
 				
 				if(data['error'])
 					alert(data['error']);	
-				else {
-
-					let arrival=new Date(data['arrival']);
-					let expected_arrival=new Date(data['expected_arrival']);
-					let expected_departure=new Date(data['expected_departure']);
-					$("#table1").find("tbody") // TODO TODO TODO
-						.append(`<tr class='child_in' data-value=${child_id}><td><a href="${child_id}">${data['name']}</a></td><td>${arrival.getHours()}:${arrival.getMinutes()}</td><td></td><td>${expected_arrival.getHours()}:${expected_arrival.getMinutes()}</td>><td>${expected_departure.getHours()}:${expected_departure.getMinutes()}</td></tr>`);					
-				}
+				else 
+					addChildRow(data, child_id);
 			}
 		});
 	});
 
-	// enfants présents : au clic, update leur Schedule avec leur date de départ
+	// enfants présents : au clic, envoie l'id'
 	$('#table1').on('click', '.child_in', function() {
 		child_id=$(this).data("value");
 		console.log(child_id);

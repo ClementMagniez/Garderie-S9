@@ -111,7 +111,7 @@ class NewScheduleForm(forms.ModelForm):
 		if (new_arrival > new_departure):
 			raise ValidationError("Le départ est avant l'arrivée.")			
 		
-		all_schedules_child=Schedule.objects.filter(child_id=self.child.id)
+		all_schedules_child=Schedule.objects.filter(child_id=self.child.id, expected=True)
 		for schedule in all_schedules_child:
 		
 			if (schedule.arrival >= new_arrival and schedule.arrival <=	new_departure)\

@@ -42,14 +42,17 @@ class ParentRedirectView(generic.RedirectView):
 class AdminIndexView(generic.TemplateView):
 	template_name="garderie/admin_index.html"
 
-# Liste des enfants, fournit au HTML tous les Child
+# Liste des enfants, fournit tous les Child ainsi que chaque Schedule encore
+# incomplet (départ indéterminé) et un Schedule proche (arrivée +- une heure)
 class ChildrenListView(generic.ListView):
 	template_name='garderie/children_list.html'
 	context_object_name='children_list'
 
 	def get_queryset(self):
+		print("-------------")
+		print(Child.objects.closest_expected_schedules())
 		return {'all_children': Child.objects.all(), 
-						'current_schedules': Schedule.objects.filter(departure=None) 
+						'current_schedules': Schedule.objects.incomplete_schedules()
 					 }
 	
 
@@ -172,6 +175,12 @@ def AjaxChildUpdateArrival(request):
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
 					
+	try:
+		if child.incomplete_schedule()!=None: # un schedule en cours 
+			return JsonResponse({'error': "L'enfant est déjà présent."})
+	except Schedule.DoesNotExist:
+		print(f'DoesNotExist raised sur {child}')
+		
 	schedule=Schedule()
 	schedule.arrival=timezone.now()
 	schedule.child=child
@@ -185,38 +194,15 @@ def AjaxChildUpdateArrival(request):
 	'arrival': schedule.arrival
 	}
 	
+	
+	# Récupère le schedule le plus proche  s'il y en a un
+	closest=child.closest_expected_schedule(schedule)
+	data['expected_arrival']=closest.arrival if closest else 'N/A'
+	data['expected_departure']=closest.departure if closest else 'N/A'
+	
 	# check si l'enfant est encore présent (date de départ pas encore remplie)
 	# Une exception peut avoir lieu s'il n'y a aucun Schedule associé à l'enfant, 
 	# ce qui en ce qui nous concerne ici revient au même : enfant pas encore là.
-	try:
-		last_schedule=child.schedule_set.filter(expected=True).latest('id')
-		if(last_schedule.departure==None):
-			return JsonResponse({'error': "L'enfant est déjà présent."})
-	except Schedule.DoesNotExist:
-		pass
-	
-	
-	# Récupère le schedule pré-enregistré pour cette période : 
-	# on le récupère à la main en calculant le schedule dont l'arrivée est la
-	# plus proche de l'arrivée réelle
-	# TODO : mettre des failsafes (aka annuler si la différence fait plus d'un jour)
-	greater=child.schedule_set.filter(expected=True, arrival__gte=schedule.arrival).order_by('arrival').first()
-	lesser=child.schedule_set.filter(expected=True, arrival__lte=schedule.arrival).order_by('-arrival').first()
-	expected_arrival, expected_departure=None, None
-	
-	if greater and lesser:
-		if abs(greater.arrival-schedule.arrival) < abs(lesser.arrival - schedule.arrival):
-			expected_arrival=greater.arrival
-			expected_departure=greater.departure
-		else: 
-			expected_arrival=lesser.arrival
-			expected_departure=lesser.departure
-	else:
-			expected_arrival=greater.arrival if greater else lesser.arrival
-			expected_departure=greater.departure if greater else lesser.departure
-		
-	data['expected_arrival']=expected_arrival
-	data['expected_departure']=expected_departure
 
 
 	return JsonResponse(data)
@@ -225,11 +211,12 @@ def AjaxChildUpdateArrival(request):
 def AjaxChildUpdateDeparture(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
-	child_name=child.first_name+" "+child.last_name
+	child_name=child.fullname()
 	
 	try: # TODO mériterait un logging (jamais censé arriver)
-		schedule=child.schedule_set.latest('id')
-		if(schedule.departure!=None):
+		schedule=child.incomplete_schedule()
+		print(f'Check {schedule}')
+		if(schedule==None):
 			return JsonResponse({'error': "L'enfant est déjà parti."})
 	except Schedule.DoesNotExist:
 		return JsonResponse({'error' : 'Erreur inconnue'})
