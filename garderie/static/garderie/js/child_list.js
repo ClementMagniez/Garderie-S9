@@ -1,18 +1,54 @@
+
+// transforme un string aaaa-MM-jj hh:mm:ss en hh:mm
+// ne valide pas str au préalable ; on ne manipule revanche rien s'il fait
+// moins de 10 caractères (valeur arbitraire en-dessous de laquelle 
+// on considère que str est un placeholder)
+function formattedDateFromString(str) {
+	// TODO : fonctionnel mais pas du tout future-proof
+	if(str.length>10)
+		return str.slice(11, 16);
+	else
+		return str
+}
+
+// Permet l'édition de la date d'arrivée du schedule schedule_id d'un enfant child_id
+// Si succès, affiche la date modifiée 
+
+function showDeparture(departure, child_id, schedule_id) {
+	$("#table1").find(`[data-value=${child_id}]`).find('.in_departure')
+		.html(formattedDateFromString(departure));
+	$("#table1").find(`[data-value=${child_id}]`).find('.in_departure').next()
+		.html(`<button class="button_departure" onclick="editDeparture(${child_id},${schedule_id})">E</button>`);
+}
+
+function editDeparture(child_id, schedule_id) {
+	newDate=window.prompt("Entrer l'heure modifiée");
+
+	if(newDate) {
+		$.ajax({
+			headers: { "X-CSRFToken": csrf}, 
+			type: 'POST',
+			url: url_edit,
+			data: {
+				'id': schedule_id,
+				'hour': newDate
+			},
+			dataType: 'json',
+			success: function (data) {
+				
+				if(data['error'])
+					alert(data['error']);	
+				else 
+					showDeparture(data['departure'], child_id, schedule_id);
+			}
+		});
+	}	
+}
+
+
+
 $(document).ready(function() {
 		
-
-	// transforme un string aaaa-MM-jj hh:mm:ss en hh:mm
-	// ne valide pas str au préalable ; on ne manipule revanche rien s'il fait
-	// moins de 10 caractères (valeur arbitraire en-dessous de laquelle 
-	// on considère que str est un placeholder)
-	function formattedDateFromString(str) {
-		// TODO : fonctionnel mais pas du tout future-proof
-		if(str.length>10)
-			return str.slice(11, 16);
-		else
-			return str
-	}
-
 	// A partir d'un map data contenant des dates 'arrival, 'expected_arrival' 
 	// et 'expected_departure' au format aaaa-MM-jj hh:mm:ss, 
 	// ainsi qu'un string 'name', ajoute une entrée à #table1 affichant ces infos
@@ -23,10 +59,10 @@ $(document).ready(function() {
 		let table=$("#table1").find("tbody");
 		table=table.append(`<tr class='child_in' data-value=${child_id}>\
 			<td><a href="${child_id}">${data['name']}</a></td>\
-			<td>${formattedDateFromString(arrival)}</td>\
-			<td></td>\ 
-			<td>${formattedDateFromString(expected_arrival)}</td>\
-			<td>${formattedDateFromString(expected_departure)}</td></tr>`);
+			<td class="in_arrival">${formattedDateFromString(arrival)}</td>\
+			<td class="in_departure"></td><td class="button_departure"></td>\ 
+			<td class="in_expected_arrival">${formattedDateFromString(expected_arrival)}</td>\
+			<td class="in_expected_departure">${formattedDateFromString(expected_departure)}</td></tr>`);
 	}
 
 	// enfants absents : au clic, envoie (async) l'id de l'enfant cliqué
@@ -34,7 +70,7 @@ $(document).ready(function() {
 	
 	$('.child_out').click( function() {
 		child_id=$(this).data("value");
-		console.log(child_id);
+
 		$.ajax({
 			headers: { "X-CSRFToken": csrf}, 
 			type: 'POST',
@@ -53,10 +89,11 @@ $(document).ready(function() {
 		});
 	});
 
-	// enfants présents : au clic, envoie l'id'
-	$('#table1').on('click', '.child_in', function() {
-		child_id=$(this).data("value");
-		console.log(child_id);
+	// enfants présents : au clic, envoie l'id
+	// à la réponse, affiche la date de départ ou une erreur
+	$('#table1').on('click', '.in_departure', function() {
+		child_id=$(this).parent().data("value");
+		console.log("gr"+child_id);
 		$.ajax({
 			headers: { "X-CSRFToken": csrf}, 
 			type: 'POST',
@@ -68,12 +105,8 @@ $(document).ready(function() {
 			success: function (data) {
 				if(data['error'])
 					alert(data['error']);
-				else {
-				
-					let d=new Date(data['departure']);
-					$("#table1").find(`[data-value=${child_id}]`)
-						.find('td:nth-child(3)').append(d.getHours()+':'+d.getMinutes());
-				}
+				else
+					showDeparture(data['departure'], child_id, data['sid']);
 			}
 		});
 	});

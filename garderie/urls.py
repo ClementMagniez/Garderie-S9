@@ -18,7 +18,8 @@ urlpatterns = [
         path('educ-redirect/', views.EducRedirectView.as_view(), name='educ_index'),
         path('parent-redirect/', views.ParentRedirectView.as_view(), name='parent_index'),
         path('admin/tauxhoraire/', views.NewHourlyRateView.as_view(), name='hourly_rate_form'),
-        path('ajax/enter_hour_arrival/', views.AjaxChildUpdateArrival, name='ajax_arrival'),
-        path('ajax/enter_hour_departure/', views.AjaxChildUpdateDeparture, name='ajax_departure'),
+        path('ajax/enter_hour_arrival/', views.AjaxChildCreateArrival, name='ajax_arrival'),
+        path('ajax/enter_hour_departure/', views.AjaxChildCreateDeparture, name='ajax_departure'),
+        path('ajax/edit_hour_departure/', views.AjaxChildEditDeparture, name='ajax_edit_departure'),
 ]
 

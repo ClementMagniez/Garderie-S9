@@ -170,7 +170,7 @@ class ChildDeleteView(generic.edit.DeleteView):
 
 
 # Enregistre l'heure d'arrivée d'un enfant 
-def AjaxChildUpdateArrival(request):
+def AjaxChildCreateArrival(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
@@ -208,7 +208,7 @@ def AjaxChildUpdateArrival(request):
 	return JsonResponse(data)
 
 # Enregistre l'heure de départ d'un enfant
-def AjaxChildUpdateDeparture(request):
+def AjaxChildCreateDeparture(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.fullname()
@@ -225,15 +225,39 @@ def AjaxChildUpdateDeparture(request):
 	schedule.save()
 	
 	data = {
-	'name': child_name,
-	'departure': schedule.departure
+	'sid': schedule.id, # utilisé pour permettre l'édition de la date de départ de l'enfant
+	'name': child_name, # utilisé pour l'affichage
+	'departure': schedule.departure # utilisé pour l'affichage
 	}
 	return JsonResponse(data)
 
 
-
-#	def get_context_data(self, **kwargs):
-#		context = super().get_context_data(**kwargs)
-#		context['child'] = Child.objects.all()
-#		return context
+# Modifie l'heure de départ d'un schedule
+# TODO TODO : ne valide pas le format de l'input avant la tentative de le save
+# (transformer la prompt js en une modale contenant un form ?)
+def AjaxChildEditDeparture(request):
+	schedule_id = request.POST.get('id', None)
+	schedule=Schedule.objects.filter(pk=schedule_id)[0]
+	
+	new_departure=request.POST.get('hour', None)
+	try: 
+		if(new_departure==None):
+			return JsonResponse({'error': "La date de départ renseignée n'a pas été trouvée."})
+		new_departure=timezone.make_aware(datetime.strptime(new_departure, '%Y-%m-%d %H:%M:%S'))
+		if(new_departure<schedule.arrival):
+			return JsonResponse({'error': "La date de départ renseignée est avant la date d'arrivée de l'enfant."})
+	except ValueError:
+		return JsonResponse({'error': "Veuillez entrer l'heure sous le format YYYY-MM-DD hh:mm:ss."})
+	except Schedule.DoesNotExist:
+		return JsonResponse({'error' : 'Erreur inconnue'})
+		
+	schedule.departure=new_departure
+	schedule.save()
+	
+	data = {
+	'sid': schedule.id, # utilisé pour permettre l'édition de la date de départ de l'enfant
+	'name': schedule.child.first_name, # utilisé pour l'affichage
+	'departure': schedule.departure # utilisé pour l'affichage
+	}
+	return JsonResponse(data)
 

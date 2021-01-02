@@ -9,6 +9,7 @@
 	var csrf="{{csrf_token}}";
 	var url_in="{% url 'ajax_arrival' %}";
 	var url_out="{% url 'ajax_departure' %}";
+	var url_edit="{% url 'ajax_edit_departure' %}";
 </script>
 {% endblock %}
 {% block body %}
@@ -19,7 +20,7 @@
 		<tr>
 			<th>Enfant</th>
 			<th>Arrivée</th>
-			<th>Départ</th>
+			<th colspan="2">Départ</th>
 			<th>Arrivée prévue</th>
 			<th>Départ prévu</th>
 		</tr>
@@ -33,26 +34,25 @@
 								{{child.fullname}}
 						</a>
 					</td> 
-					<td>
-					{{schedule.arrival |default_if_none:''|date:"G:i"}}
+					<td class="in_arrival">
+						{{schedule.arrival |default_if_none:''|date:"G:i"}}
 					</td>
-					<td>
-					</td>
-					
+					<td class="in_departure"></td>
+					<td></td>
 					{% comment %}
 					Rédaction circonvolue puisque le null check de default_if_none ne cascade pas :
 					on doit check individuellement .arrival et .departure, on enregistre
 					donc closest_to_incomplete dans une variable
 					{% endcomment %}
 					{% with closest=child.closest_to_incomplete %}
-					<td>
+					<td class="in_expected_arrival">
 						{% if closest %}
 							{{closest.arrival}}
 						{% else %}
 							N/A
 						{% endif %}
 					</td>
-					<td>
+					<td class="in_expected_departure">
 						{% if closest %}
 							{{closest.departure}}
 						{% else %}
