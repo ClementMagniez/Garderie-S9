@@ -3,12 +3,5 @@
 {% block title %}Ajouter un enfant{% endblock %}
 
 {% block body %}
-  <form action="" method="post">
-    {% csrf_token %}
-    <table>
-    {{ form.as_table }}
-    </table>
-
-    <input type="submit" value="Submit">
-  </form>
+	{% include 'garderie/forms/embedded_form.html' %}
 {% endblock %}
