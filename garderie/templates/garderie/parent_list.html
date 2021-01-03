@@ -1,0 +1,40 @@
+{% extends 'garderie/base.html' %}
+
+{% block title %}Liste des parents{% endblock %}
+
+{% block body %}
+<div class="container">
+	{% if user.is_authenticated %}
+	<table class="table table-striped">
+		<thead class="thead-light">
+			<th>Parent</th>
+			<th colspan=2>Enfants à charge</th>
+		</thead>
+		{% for parent in parent_list %}
+		<tr>
+			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.uid.first_name }} {{ parent.uid.last_name }}</a></td>
+				<td>
+				{% for child in parent.child_set.all %} 
+					{% if forloop.counter > 1 %}
+					/
+					{% endif %}
+					<a href="{% url 'child_profile' child.id %}">{{ child.first_name }}</a>
+				{% endfor %}
+				</td>
+			<td> 
+				{% comment %} 
+					TODO : Méthode grossière pour POST vers /delete/, mais 
+					on doit pouvoir faire plus élégant
+				{% endcomment %}
+				<form method="POST" action="{% url 'parent_delete' parent.uid_id  %}">
+   				{% csrf_token %}<input type="submit" value="DELETE">
+				</form>
+			</td>
+		</tr>
+		{% endfor %}
+	</table>
+	{% else %}
+		<p>Connectez-vous pour voir la liste des enfants</p>
+	{% endif %}
+</div>
+{% endblock %}

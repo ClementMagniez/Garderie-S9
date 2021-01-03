@@ -1,0 +1,106 @@
+{% extends 'garderie/base.html' %}
+
+{% block title %}Liste des enfants{% endblock %}
+
+{% load static %}
+{% block scripts %}
+<script src="{% static '/garderie/js/child_list.js/' %}"></script>
+<script>
+	var csrf="{{csrf_token}}";
+	var url_in="{% url 'ajax_arrival' %}";
+	var url_out="{% url 'ajax_departure' %}";
+	var url_edit="{% url 'ajax_edit_departure' %}";
+</script>
+{% endblock %}
+{% block body %}
+
+<h1>Liste des enfants présents</h1>
+<table id="table1">
+	<thead>
+		<tr>
+			<th>Enfant</th>
+			<th>Arrivée</th>
+			<th colspan="2">Départ</th>
+			<th>Arrivée prévue</th>
+			<th>Départ prévu</th>
+		</tr>
+	</thead>
+		{% for schedule in children_list.current_schedules %}
+			{% with child=schedule.child %}
+
+				<tr class="child_in" data-value="{{child.id}}">
+					<td>
+						<a href="{% url 'child_profile' child.id %}">
+								{{child.fullname}}
+						</a>
+					</td> 
+					<td class="in_arrival">
+						{{schedule.arrival |default_if_none:''|date:"G:i"}}
+					</td>
+					<td class="in_departure"></td>
+					<td></td>
+					{% comment %}
+					Rédaction circonvolue puisque le null check de default_if_none ne cascade pas :
+					on doit check individuellement .arrival et .departure, on enregistre
+					donc closest_to_incomplete dans une variable
+					{% endcomment %}
+					{% with closest=child.closest_to_incomplete %}
+					<td class="in_expected_arrival">
+						{% if closest %}
+							{{closest.arrival}}
+						{% else %}
+							N/A
+						{% endif %}
+					</td>
+					<td class="in_expected_departure">
+						{% if closest %}
+							{{closest.departure}}
+						{% else %}
+							N/A
+						{% endif %}
+					</td>
+					{% endwith%} 
+				</tr>
+			{% endwith %}
+		{% endfor %}
+	<tbody>
+	</tbody>
+</table>
+
+<h1>Liste des enfants</h1>
+<table id="table2">
+	<thead>
+		<tr>
+			<th>Enfant</th>
+			<th>Horaires de présence</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for child in children_list.all_children %}
+		<tr class="child_out" data-value="{{child.id}}">
+			<td>
+				<a href="{% url 'child_profile' child.id %}">
+						{{child.fullname}}
+				</a>
+			</td> 
+			<td>
+				{% for schedule in child.schedule_set.all %} 
+					{% if schedule.expected %}
+							{{schedule.arrival |date:"D G:i"}} - {{schedule.departure |date:"G:i"}}
+							<br/>
+					{% endif %}
+				{% endfor %}
+			</td>
+			{% if user.is_superuser %}
+				<td> 
+					<form method="POST" action="{% url 'child_delete' child.id  %}">
+		 				{% csrf_token %}
+		 				<input type="submit" value="X">
+					</form>
+				</td>
+			{% endif %}
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}
