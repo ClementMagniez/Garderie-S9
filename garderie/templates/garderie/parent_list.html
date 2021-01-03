@@ -18,7 +18,7 @@
 					{% if forloop.counter > 1 %}
 					/
 					{% endif %}
-					<a href="{% url 'child_profile' child.id %}">{{ child.surname}}</a>
+					<a href="{% url 'child_profile' child.id %}">{{ child.first_name }}</a>
 				{% endfor %}
 				</td>
 			<td> 
