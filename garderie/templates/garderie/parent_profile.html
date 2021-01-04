@@ -1,38 +1,47 @@
 {% extends 'garderie/base.html' %}
 {% block title %}Profil de {{ parent.uid.first_name }} {{parent.uid.last_name}}{% endblock %}
 {% block body %} 
-<h1>{{ parent.uid.first_name }} {{parent.uid.last_name}}</h1>
+{% if user.is_authenticated and user.id == parent.uid_id or user.is_superuser %}
+	<h1>{{ parent.fullname}}</h1>
+	<h2>Informations personnelles</2>
+	<form action="{% url 'parent_update' parent.uid_id  %}" method="post">
+		{% csrf_token %}
+		<table>
+		{{ personal_data_form.as_table }}
+		</table>
 
-<table>
-	<thead>
+		<input type="submit" value="Valider">
+	</form>
+
+
+
+	<table>
+		<thead>
+			<tr>
+				<th>Enfants inscrits</th>
+		</thead>
+	{% for child in parent.child_set.all %}
 		<tr>
-			<th>Enfants inscrits</th>
-	</thead>
-{% for child in parent.child_set.all %}
-	<tr>
-		<td>
-			<a href={% url 'child_profile' child.id %}>
-				{{child.first_name}} {{child.last_name}}
-			</a> 
-		</td>
-		{% if user.is_authenticated and user.id == parent.uid_id %}
-		<td>
+			<td>
+				<a href={% url 'child_profile' child.id %}>
+					{{child.first_name}} {{child.last_name}}
+				</a> 
+			</td>
+			<td>
 				<form method="POST" action="{% url 'child_delete' child.id  %}?next={{request.path}}">
 	 				{% csrf_token %}
 	 				<input type="submit" value="X">
 				</form>
-		</td>
-		{% endif %}
-	</tr>
-{% endfor %}
-</table>
+			</td>
+		</tr>
+	{% endfor %}
+	</table>
 
-{% if user.is_authenticated and user.id == parent.uid_id %}
 	<h3>Inscrire un enfant</h3>
 	<form action="{% url 'parent_create_child' parent.uid_id  %}" method="post">
 		{% csrf_token %}
 		<table>
-		{{ form.as_table }}
+		{{ new_child_form.as_table }}
 		</table>
 
 		<input type="submit" value="Valider">

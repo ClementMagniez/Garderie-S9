@@ -72,8 +72,9 @@ class ChildProfileView(generic.DetailView):
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['form'] = NewScheduleForm(pk=self.kwargs['pk'])
+		context['schedule_form'] = NewScheduleForm(pk=self.kwargs['pk'])
 		context['action']=reverse('schedule_register', kwargs={'pk':self.kwargs['pk']}) # même URL donc sûrement améliorable
+		context['personal_data_form'] = ChildUpdateForm(instance=self.object)	
 		return context
 
 # Profil d'un parent donné
@@ -81,15 +82,35 @@ class ParentProfileView(generic.DetailView):
 	model=Parent
 	template_name='garderie/parent_profile.html'
 
+	# Transmet la requête actuelle aux views récupérant le POST de deux formulaires :
+	# new_child_form crée un NewChildFormParent et passe la requête à ParentCreateChildView
+	# personal_data_form crée un ParentUpdateForm et passe la requête à EditUserByUserView
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['form'] = NewChildFormParent(request=self.request)
+		context['new_child_form'] = NewChildFormParent(request=self.request)
+		context['personal_data_form'] = ParentUpdateForm(request=self.request,
+																										 instance=self.object.uid,
+																										 initial={'phone':self.object.phone})
 		return context
+	
+# Formulaire d'édition d'un parent donné, embedded dans ParentProfileView
+class ParentUpdateView(generic.edit.UpdateView):
+	form_class=ParentUpdateForm
+	model = User
+	
+	def get_form_kwargs(self):
+		kwargs=super().get_form_kwargs()
+		kwargs['request']=self.request
+		return kwargs
+		
+	def get_success_url(self):
+		return reverse('parent_profile', args=[self.request.user.id])
+
+
 	
 # Formulaire de création d'un schedule
 class CreateScheduleView(generic.edit.CreateView):
 	form_class=NewScheduleForm
-	template_name='garderie/forms/embedded_form.html' # TODO TODO
 	def get_form_kwargs(self):
 		kwargs=super().get_form_kwargs()
 		kwargs['pk']=self.kwargs['pk']
@@ -114,6 +135,20 @@ class ParentCreateChildView(generic.edit.CreateView):
 			
 	def get_success_url(self):
 		return reverse('parent_profile', args=[self.request.user.id])
+	
+# Formulaire d'édition d'un enfant donné, embedded dans ChildProfileView
+class ChildUpdateView(generic.edit.UpdateView):
+	form_class=ChildUpdateForm
+	model = Child
+	
+	def get_form_kwargs(self):
+		kwargs=super().get_form_kwargs()
+		return kwargs
+		
+	def get_success_url(self):
+		return reverse('child_profile', kwargs={'pk':self.kwargs['pk']})
+
+
 	
 
 # Formulaire de création d'un nouveau parent

@@ -9,6 +9,7 @@ from datetime import datetime
 import random
 import string
 
+# Formulaire de création d'un Parent
 # Sémantiqueemnt, on abuse un peu de ModelForm ici puisqu'on utilise un seul
 # field de Parent ; en réalité, on crée un User, qu'on wrap dans la création d'un Parent 
 # Concrètement, on économise les quelques lignes nécessaires à la création du Parent
@@ -51,6 +52,36 @@ class NewUserForm(forms.ModelForm):
 								[user.email])
 		return new_parent
 		
+# Formulaire de modification d'un parent 
+class ParentUpdateForm(forms.ModelForm):
+# TODO : inverse complètement le raisonnement avec NewUserForm, qui prend
+# pour modèle Parent et ajoute artificiellement User ; ici, on part de User
+# et on ajoute User
+# c'est fonctionnellement sans grande importance, mais à corriger éventuellement
+
+	phone=forms.CharField(label="Téléphone")
+
+	class Meta:
+		model=User
+		fields=['username', 'first_name', 'last_name', 'email']
+		help_texts = { # TODO temporaire pour masquer l'aide par défaut, mais à compléter
+				'username': None,
+		}
+
+	def __init__(self, *args, **kwargs):
+		self.request=kwargs.pop('request')
+		super().__init__(*args, **kwargs)
+
+	def save(self, commit=True):
+		updated_user=super().save(commit=False)
+		if commit:
+			parent=Parent.objects.get(uid=updated_user)
+			parent.phone=self.cleaned_data['phone']
+			print(parent.phone)
+			parent.save()
+			updated_user.save()
+		return updated_user
+
 
 # Formulaire de création d'un enfant par un admin
 class NewChildFormAdmin(forms.ModelForm):
@@ -77,7 +108,15 @@ class NewChildFormParent(forms.ModelForm):
 			child.save()
 		return child
 	
-from django.contrib import messages
+
+# Met à jour un enfant
+class ChildUpdateForm(forms.ModelForm):
+	class Meta:
+		model = Child
+		fields = ['first_name', 'last_name']
+
+	
+#from django.contrib import messages TODO ???
 	
 # Formulaire de création d'un Schedule pour un enfant donné
 class NewScheduleForm(forms.ModelForm):
