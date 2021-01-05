@@ -1,6 +1,6 @@
 from django import forms
 from django.core.mail import send_mail
-from .models import Parent, Child, HourlyRate, Schedule
+from .models import Parent, Child, HourlyRate, Schedule, ReliablePerson
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -89,6 +89,26 @@ class NewChildFormAdmin(forms.ModelForm):
 		model = Child
 		fields = [ 'parent', 'first_name', 'last_name']
 
+
+# Formulaire de création d'une personne de confiance par un parent
+class NewReliableForm(forms.ModelForm):
+	class Meta:
+		model = ReliablePerson
+		fields = [ 'first_name', 'last_name']
+		
+	def __init__(self, *args, **kwargs):
+		self.request=kwargs.pop('request')
+		super().__init__(*args, **kwargs)
+		
+		
+	def save(self, commit=True):
+		person=super().save(commit=False)
+		if commit:
+			person.parent_id=self.request.user.id
+			person.save()
+		return person
+				
+		
 # Formulaire de création d'un enfant par son parent 
 # Par rapport à NewChildFormAdmin, masque le champ "parent"
 # et le remplit automatiquement via l'utilisateur connecté

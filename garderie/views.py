@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-from .models import Child, Parent, HourlyRate, Schedule
+from .models import Child, Parent, HourlyRate, Schedule, ReliablePerson
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.utils import timezone
@@ -88,6 +88,7 @@ class ParentProfileView(generic.DetailView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['new_child_form'] = NewChildFormParent(request=self.request)
+		context['new_reliable_form'] = NewReliableForm(request=self.request)
 		context['personal_data_form'] = ParentUpdateForm(request=self.request,
 																										 instance=self.object.uid,
 																										 initial={'phone':self.object.phone})
@@ -123,6 +124,18 @@ class CreateScheduleView(generic.edit.CreateView):
 			
 	def get_success_url(self):
 		return reverse('child_profile', args=[self.kwargs['pk']])
+
+# Formulaire de création d'une personne de confiance (susceptible d'être récupérée par le parent)
+class CreateReliableView(generic.edit.CreateView):
+	form_class=NewReliableForm
+	
+	def get_form_kwargs(self):
+		kwargs=super().get_form_kwargs()
+		kwargs['request']=self.request
+		return kwargs
+			
+	def get_success_url(self):
+		return reverse('parent_profile', args=[self.kwargs['pk']])
 
 # Formulaire de création d'un enfant par le parent
 class ParentCreateChildView(generic.edit.CreateView):
@@ -202,6 +215,13 @@ class ChildDeleteView(generic.edit.DeleteView):
 	
 	def get_success_url(self):
 		return self.request.GET.get('next', reverse('children_list')) # évite un changement de page
+
+# Formulaire de suppression d'une personne de confiance
+class ParentDeleteReliableView(generic.edit.DeleteView):
+	model = ReliablePerson
+	
+	def get_success_url(self):
+		return reverse('parent_profile', kwargs={'pk':self.request.user.id})
 
 
 # Enregistre l'heure d'arrivée d'un enfant 
