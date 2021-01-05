@@ -11,6 +11,10 @@ class ScheduleManager(models.Manager):
 	def incomplete_schedules(self):
 		return super().get_queryset().filter(departure=None)
 
+	# Schedules ayant commencé il y a moins de 30 jours		
+	def recent_schedules(self):
+		return super().get_queryset().filter(arrival__gte=datetime.datetime.today()-datetime.timedelta(days=30))
+
 class ChildManager(models.Manager):
 	# Renvoie un array de Schedules où chaque schedule correspond à Child#closest_expected_schedule
 	# pour chaque enfant existant
@@ -22,8 +26,6 @@ class ChildManager(models.Manager):
 			res.append(child.closest_expected_schedule(child.incomplete_schedule()))
 		
 		return res	
-		
-		
 
 
 # Modèles
@@ -116,10 +118,15 @@ class Schedule(models.Model):
 	def __str__(self):
 		return str(self.arrival)+" -- "+str(self.departure)
 	
-	# Définit un schedule incomplet, dont le départ n'a pas encore eu lieu
+	# Renvoie True sile schedule n'a pas encore de départ, False sinon
 	def incomplete(self):
 		return self.departure==None
 		
+
+	# Renvoie True si le schedule a commencé au cours des 30 derniers jours
+	def in_past_month(self):
+		last_month=datetime.datetime.today()-datetime.timedelta(days=30)
+		return self.arrival>last_month
 
 	
 class ReliablePerson(models.Model):
