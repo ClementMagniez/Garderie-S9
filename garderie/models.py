@@ -60,7 +60,6 @@ class Child(models.Model):
 			if schedule.departure==None:
 				return schedule
 
-
 	#	Renvoie le Schedule de l'enfant le plus proche du schedule donné à 3h près, 
 	# ou None s'il n'y en a pas 
 	def closest_expected_schedule(self, schedule):
@@ -98,6 +97,10 @@ class Child(models.Model):
 			return None
 		else:
 			return self.closest_expected_schedule(ongoing)
+
+	# Renvoie un Bill comportant les Schedules ayant commencé avant _start_ et fini avant _end_
+#	def generate_bill(start, end): TODO
+		
 
 
 class HourlyRate(models.Model):
@@ -144,7 +147,6 @@ class ReliablePerson(models.Model):
 
 class Bill(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE)
-	rate=models.ForeignKey(HourlyRate, on_delete=models.DO_NOTHING)
 	amount=models.FloatField()
 	paid=models.BooleanField()
 	date_start=models.DateTimeField("Date de départ")
