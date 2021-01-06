@@ -17,6 +17,13 @@ class HomeRedirectView(RedirectView):
 
 
 
+# Appelle ChildManager#generate_monthly_bills et renvoie sur admin_index
+# TODO : remplacer par une requête AJAX ?
+class NewMonthlyBillsView(RedirectView):
+	def get_redirect_url(self, *args, **kwargs):
+		Child.objects.generate_monthly_bills()		
+		return reverse('admin_index')
+
 # Redirection après le login selon le type d'utilisateur
 class IndexRedirectView(RedirectView):	
 	def get_redirect_url(self, *args, **kwargs):

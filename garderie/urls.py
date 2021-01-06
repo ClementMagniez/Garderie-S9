@@ -3,6 +3,8 @@ from . import views
 
 url_admin=[
         path('admin/tauxhoraire/', views.NewHourlyRateView.as_view(), name='hourly_rate_form'),
+        path('admin/factures', views.BillsListView.as_view(), name='bills_list'),
+
 ]
 url_parent=[
         path('parent-redirect/', views.ParentRedirectView.as_view(), name='parent_index'),
@@ -34,10 +36,15 @@ url_ajax=[
 ]
 
 
-urlpatterns = [ 
-        path('', views.HomeRedirectView.as_view(), name='home_redirect'),
+url_redirect=[
+        path('admin/monthlybills', views.NewMonthlyBillsView.as_view(), name='generate_monthly_bills'),
         path('index-redirect/', views.IndexRedirectView.as_view(), name='index_redirect'),
         path('admin/accueil/', views.AdminIndexView.as_view(), name='admin_index'),
         path('educ-redirect/', views.EducRedirectView.as_view(), name='educ_index'),
-] + url_admin+url_parent+url_enfant+url_ajax
+]
+
+
+urlpatterns = [ 
+        path('', views.HomeRedirectView.as_view(), name='home_redirect'),
+] + url_admin + url_parent + url_enfant + url_ajax + url_redirect
 

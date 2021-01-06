@@ -24,9 +24,19 @@ class ChildManager(models.Manager):
 		res=[]
 		for child in all_entries:
 			res.append(child.closest_expected_schedule(child.incomplete_schedule()))
-		
 		return res	
 
+
+	# Appelle Child#generate_bill sur chaque Child existant avec _start_ et _end_
+	def generate_all_bills(self, start, end):
+		for child in super().all():
+			child.generate_bill(start, end)
+
+	# Wrapper de ChildManager#generate_all_bills : l'appelle sur les 30 derniers jours
+	def generate_monthly_bills(self):
+		end=datetime.datetime.now()
+		start=end-datetime.timedelta(days=30)
+		self.generate_all_bills(start, end)
 
 # Modèles
 
@@ -98,9 +108,12 @@ class Child(models.Model):
 		else:
 			return self.closest_expected_schedule(ongoing)
 
-	# Renvoie un Bill comportant les Schedules ayant commencé avant _start_ et fini avant _end_
-#	def generate_bill(start, end): TODO
-		
+	# Renvoie un Bill calculé via les Schedules ayant commencé avant _start_ et fini avant _end_
+	def generate_bill(self, start, end): 
+		schedules=self.schedule_set.filter(arrival__gte=start, departure__lte=end)
+		bill=Bill(child=self, amount=0, paid=False, date_start=start, date_end=end)
+#		bill.save()
+		bill.calc_amount(schedules)		
 
 
 class HourlyRate(models.Model):
@@ -151,4 +164,14 @@ class Bill(models.Model):
 	paid=models.BooleanField()
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin")
+	
+	# Enregistre _amount_ à partir des _schedules_ fournis dans schedule_set
+	# Ne valide pas que ces schedules sont entre date_start et date_end 
+	def calc_amount(self, schedule_set):
+		amount=0.0
+		for schedule in schedule_set:
+			time_spent=(schedule.departure-schedule.arrival)
+			amount+=(time_spent.seconds/3600*schedule.rate.value)
+		self.amount=amount
+		self.save()		
 	
