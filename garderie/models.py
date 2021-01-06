@@ -34,7 +34,7 @@ class ChildManager(models.Manager):
 
 	# Wrapper de ChildManager#generate_all_bills : l'appelle sur les 30 derniers jours
 	def generate_monthly_bills(self):
-		end=datetime.datetime.now()
+		end=timezone.localtime()
 		start=end-datetime.timedelta(days=30)
 		self.generate_all_bills(start, end)
 

@@ -20,12 +20,11 @@ def AjaxChildCreateArrival(request):
 		print(f'DoesNotExist raised sur {child}')
 		
 	schedule=Schedule()
-	schedule.arrival=timezone.now()
+	schedule.arrival=timezone.localtime()
 	schedule.child=child
 	schedule.expected=False
 	schedule.rate=HourlyRate.objects.latest('id')
 	schedule.save()
-
 
 	data = {
 	'name': child_name,
@@ -59,7 +58,7 @@ def AjaxChildCreateDeparture(request):
 	except Schedule.DoesNotExist:
 		return JsonResponse({'error' : 'Erreur inconnue'})
 	
-	schedule.departure=timezone.now()
+	schedule.departure=timezone.localtime()
 	schedule.save()
 	
 	data = {
