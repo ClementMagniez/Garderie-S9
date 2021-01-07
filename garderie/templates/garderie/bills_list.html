@@ -1,0 +1,44 @@
+{% extends 'garderie/base.html' %}
+
+{% block title %}Liste des factures{% endblock %}
+
+{% block body %}
+<div class="container">
+	{% if user.is_authenticated %}
+	<table class="table table-striped">
+		<thead class="thead-light">
+			<th>Parent</th>
+			<th>Enfant</th>
+			<th>Date</th>
+			<th>Montant</th>
+			<th>Statut</th>
+		</thead>
+		{% for bill in bills_list %}
+		<tr>
+			<td>
+				<a href="{% url 'parent_profile' bill.child.parent.uid_id %}">{{ bill.child.parent.fullname }}</a>
+			</td>
+			<td>
+				<a href="{% url 'child_profile' bill.child.id %}">{{ bill.child.first_name }}</a>
+			</td>
+			<td> 
+				{{bill.date_start | date:"d/m/y"}} - {{ bill.date_end | date:"d/m/y" }}
+			</td>
+			<td>
+				{{ bill.amount | floatformat:'2' }}
+			</td>
+			<td> 
+				{% if bill.paid %}
+					Payé
+				{% else %}
+					Impayé
+				{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+	</table>
+	{% else %}
+		<p>Connectez-vous pour voir les factures</p>
+	{% endif %}
+</div>
+{% endblock %}

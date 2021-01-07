@@ -11,6 +11,10 @@ class ScheduleManager(models.Manager):
 	def incomplete_schedules(self):
 		return super().get_queryset().filter(departure=None)
 
+	# Schedules ayant commencé il y a moins de 30 jours		
+	def recent_schedules(self):
+		return super().get_queryset().filter(arrival__gte=datetime.datetime.today()-datetime.timedelta(days=30))
+
 class ChildManager(models.Manager):
 	# Renvoie un array de Schedules où chaque schedule correspond à Child#closest_expected_schedule
 	# pour chaque enfant existant
@@ -20,11 +24,19 @@ class ChildManager(models.Manager):
 		res=[]
 		for child in all_entries:
 			res.append(child.closest_expected_schedule(child.incomplete_schedule()))
-		
 		return res	
-		
-		
 
+
+	# Appelle Child#generate_bill sur chaque Child existant avec _start_ et _end_
+	def generate_all_bills(self, start, end):
+		for child in super().all():
+			child.generate_bill(start, end)
+
+	# Wrapper de ChildManager#generate_all_bills : l'appelle sur les 30 derniers jours
+	def generate_monthly_bills(self):
+		end=timezone.localtime()
+		start=end-datetime.timedelta(days=30)
+		self.generate_all_bills(start, end)
 
 # Modèles
 
@@ -57,7 +69,6 @@ class Child(models.Model):
 		for schedule in self.schedule_set.all():
 			if schedule.departure==None:
 				return schedule
-
 
 	#	Renvoie le Schedule de l'enfant le plus proche du schedule donné à 3h près, 
 	# ou None s'il n'y en a pas 
@@ -97,6 +108,13 @@ class Child(models.Model):
 		else:
 			return self.closest_expected_schedule(ongoing)
 
+	# Renvoie un Bill calculé via les Schedules ayant commencé avant _start_ et fini avant _end_
+	def generate_bill(self, start, end): 
+		schedules=self.schedule_set.filter(arrival__gte=start, departure__lte=end)
+		bill=Bill(child=self, amount=0, paid=False, date_start=start, date_end=end)
+#		bill.save()
+		bill.calc_amount(schedules)		
+
 
 class HourlyRate(models.Model):
 	value=models.FloatField()
@@ -116,14 +134,19 @@ class Schedule(models.Model):
 	def __str__(self):
 		return str(self.arrival)+" -- "+str(self.departure)
 	
-	# Définit un schedule incomplet, dont le départ n'a pas encore eu lieu
+	# Renvoie True sile schedule n'a pas encore de départ, False sinon
 	def incomplete(self):
 		return self.departure==None
 		
 
+	# Renvoie True si le schedule a commencé au cours des 30 derniers jours
+	def in_past_month(self):
+		last_month=datetime.datetime.today()-datetime.timedelta(days=30)
+		return self.arrival>last_month
+
 	
 class ReliablePerson(models.Model):
-	parents=models.ForeignKey(Parent, on_delete=models.CASCADE)
+	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
 	phone=models.CharField(max_length=20, null=True) 
@@ -131,12 +154,24 @@ class ReliablePerson(models.Model):
 	def __str__(self):
 		return self.first_name+" "+self.last_name
 
+	def fullname(self):
+		return str(self)	
+
 
 class Bill(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE)
-	rate=models.ForeignKey(HourlyRate, on_delete=models.DO_NOTHING)
 	amount=models.FloatField()
 	paid=models.BooleanField()
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin")
+	
+	# Enregistre _amount_ à partir des _schedules_ fournis dans schedule_set
+	# Ne valide pas que ces schedules sont entre date_start et date_end 
+	def calc_amount(self, schedule_set):
+		amount=0.0
+		for schedule in schedule_set:
+			time_spent=(schedule.departure-schedule.arrival)
+			amount+=(time_spent.seconds/3600*schedule.rate.value)
+		self.amount=amount
+		self.save()		
 	

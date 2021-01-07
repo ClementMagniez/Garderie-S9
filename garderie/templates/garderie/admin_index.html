@@ -50,9 +50,16 @@
   	<ul class="list-group">
   		<li class="list-group-item list-group-item-secondary"> Divers </li>
 		<li class="list-group-item">
-			<a href="{% url 'parent_list' %}">
+			<a href="{% url 'bills_list' %}">
 				<button class="btn btn-outline-secondary">
 					Liste des factures
+				</button>
+			</a>
+		</li>
+		<li class="list-group-item">
+			<a href="{% url 'generate_monthly_bills' %}">
+				<button class="btn btn-outline-secondary">
+					Générer les factures mensuelles
 				</button>
 			</a>
 		</li>
