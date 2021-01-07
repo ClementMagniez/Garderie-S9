@@ -2,23 +2,27 @@
 {% block title %}Profil de {{ parent.uid.first_name }} {{parent.uid.last_name}}{% endblock %}
 {% block body %} 
 {% if user.is_authenticated and user.id == parent.uid_id or user.is_superuser %}
+<div class="d-flex justify-content-center pt-3">
+ <div class="bg-light p-4 border border-secondary rounded">
 	<h1>{{ parent.fullname}}</h1>
-	<h2>Informations personnelles</2>
-	<form action="{% url 'parent_update' parent.uid_id  %}" method="post">
+	<h2>Informations personnelles</h2>
+	<form action="{% url 'parent_update' parent.uid_id  %}" method="post" class="pt-3">
 		{% csrf_token %}
 		<table>
 		{{ personal_data_form.as_table }}
 		</table>
 
-		<input type="submit" value="Valider">
+		<input type="submit" value="Valider" class="btn btn-primary">
 	</form>
 
 
-
-	<table>
+<div class="pt-3">
+	<table class="table table-striped border">
 		<thead>
 			<tr>
 				<th>Enfants inscrits</th>
+				<th> </th>
+			</tr>
 		</thead>
 	{% for child in parent.child_set.all %}
 		<tr>
@@ -30,16 +34,20 @@
 			<td>
 				<form method="POST" action="{% url 'child_delete' child.id  %}?next={{request.path}}">
 	 				{% csrf_token %}
-	 				<input type="submit" value="X">
+	 				<input type="submit" value="X" class="btn btn-danger btn-sm">
 				</form>
 			</td>
 		</tr>
 	{% endfor %}
 	</table>
+</div>
+
+<div class="pt-3">
 	<table>
 		<thead>
 			<tr>
 				<th>Personnes de confiance</th>
+			</tr>
 		</thead>
 	{% for person in parent.reliableperson_set.all %}
 		<tr>
@@ -49,13 +57,15 @@
 			<td>
 				<form method="POST" action="{% url 'reliable_person_delete' person.id %}?next={{request.path}}">
 	 				{% csrf_token %}
-	 				<input type="submit" value="X">
+	 				<input type="submit" value="X" class="btn btn-danger btn-sm">
 				</form>
 			</td>
 		</tr>
 	{% endfor %}
 	</table>
+</div>
 
+<div class="pt-3">
 	<h3>Inscrire un enfant</h3>
 	<form action="{% url 'parent_create_child' parent.uid_id  %}" method="post">
 		{% csrf_token %}
@@ -63,10 +73,11 @@
 		{{ new_child_form.as_table }}
 		</table>
 
-		<input type="submit" value="Valider">
+		<input type="submit" value="Valider" class="btn btn-primary">
 	</form>
+</div>
 	
-	
+<div class="pt-3">
 	<h3>Ajouter une personne de confiance</h3>
 	<form action="{% url 'parent_create_reliable' parent.uid_id  %}" method="post">
 		{% csrf_token %}
@@ -74,9 +85,11 @@
 		{{ new_reliable_form.as_table }}
 		</table>
 
-		<input type="submit" value="Valider">
+		<input type="submit" value="Valider" class="btn btn-primary">
 	</form>
+</div>
 {% endif %}
-
+</div>
+</div>
 
 {% endblock %}
