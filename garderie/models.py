@@ -161,7 +161,6 @@ class ReliablePerson(models.Model):
 class Bill(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE)
 	amount=models.FloatField()
-	paid=models.BooleanField()
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin")
 	
