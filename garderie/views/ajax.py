@@ -28,6 +28,7 @@ def AjaxChildCreateArrival(request):
 
 	data = {
 	'name': child_name,
+	'sid': schedule.id,
 	'arrival': schedule.arrival
 	}
 	
@@ -93,8 +94,26 @@ def AjaxChildEditDeparture(request):
 	
 	data = {
 	'sid': schedule.id, # utilisé pour permettre l'édition de la date de départ de l'enfant
+	'cid': schedule.child.id, # utilisé pour retrouver le row dans la table
 	'name': schedule.child.first_name, # utilisé pour l'affichage
 	'departure': schedule.departure # utilisé pour l'affichage
 	}
 	return JsonResponse(data)
+
+# Supprime un Schedule donné par 'id'
+def AjaxChildRemoveArrival(request):
+	schedule_id = request.POST.get('id', None)
+
+	try: 
+		schedule=Schedule.objects.filter(pk=schedule_id)[0]
+	except IndexError:
+		return JsonResponse({'error' : 'L\'enfant a déjà été retiré de la liste de présence.'})
+		
+	schedule.delete()
+	
+	data = {
+	'cid': schedule.child.id, # utilisé pour retrouver le row dans la table
+	}
+	return JsonResponse(data)
+
 

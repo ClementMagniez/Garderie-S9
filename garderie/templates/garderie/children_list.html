@@ -10,6 +10,7 @@
 	var url_in="{% url 'ajax_arrival' %}";
 	var url_out="{% url 'ajax_departure' %}";
 	var url_edit="{% url 'ajax_edit_departure' %}";
+	var url_remove_arrival="{% url 'ajax_remove_arrival' %}";
 </script>
 {% endblock %}
 {% block body %}
@@ -19,7 +20,7 @@
 	<table id="table1" class="table table-striped">
 		<thead>
 			<tr>
-				<th>Enfant</th>
+				<th colspan="2">Enfant</th>
 				<th>Arrivée</th>
 				<th colspan="2">Départ</th>
 				<th>Arrivée prévue</th>
@@ -30,6 +31,8 @@
 				{% with child=schedule.child %}
 
 					<tr class="child_in" data-value="{{child.id}}">
+						<td> <button class="btn btn-danger btn-sm" onclick="removeArrival({{ schedule.id }})">x</button>
+						</td>
 						<td>
 							<a href="{% url 'child_profile' child.id %}">
 									{{child.fullname}}
