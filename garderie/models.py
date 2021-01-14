@@ -117,6 +117,15 @@ class Child(models.Model):
 		except Bill.DoesNotExist:
 			pass # rien à calculer si l'enfant n'a pas été présent
 
+	# Schedules ayant commencé il y a moins de 30 jours		
+	def recent_schedules(self):
+		return self.schedule_set.filter(arrival__gte=datetime.today()-timedelta(days=30))
+
+	# Schedules créés et anticipés, expected=True		
+	def expected_schedules(self):
+		return self.schedule_set.filter(expected=True)
+
+
 
 class HourlyRate(models.Model):
 	value=models.FloatField(verbose_name="Taux horaire")

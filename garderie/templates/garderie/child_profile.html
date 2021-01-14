@@ -23,60 +23,70 @@
 	
 <div class="pt-3">
 <h4>Heures de présence prévues :</h4>
+{% if child.expected_schedules %}
+	<div class="border rounded">
+	<table class="table table-striped">
+		<thead>
+			<th> </th>
+			<th> Heure d'arrivée </th>
+			<th> Heure de départ </th>
+		</thead>
+	{% for schedule in child.schedule_set.all %}
+		{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
+			{% if schedule.expected %}
+				<tr>
+					<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
+						{% csrf_token %}
+						<td>
+							<input type="submit" value="x" class="btn btn-danger btn-sm">
+						</td>
+						<td> {{schedule.arrival}} </td>
+						<td> {{schedule.departure}} </td>
+					</form>
+				</tr>
+			{% endif %}
+		{% endif %}
+	{% endfor %}
+	</table>
+	</div>
+{% else %}
+<p><i>Aucune plage horaire n'a été crée pour {{child.first_name}}.<br/> 
+Créez un horaire d'accueil via le formulaire en bas de page.</i></p>
+{% endif %}
+</div>
+
+<div class="pt-3">
+<h4>Heures de présence récentes :</h4>
+{% if child.recent_schedules %}
 <div class="border rounded">
-<table class="table table-striped">
+	<table class="table table-striped">
 	<thead>
 		<th> </th>
 		<th> Heure d'arrivée </th>
 		<th> Heure de départ </th>
 	</thead>
-{% for schedule in child.schedule_set.all %}
-	{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
-		{% if schedule.expected %}
-			<tr>
-				<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
-					{% csrf_token %}
-					<td>
-						<input type="submit" value="x" class="btn btn-danger btn-sm">
-					</td>
-					<td> {{schedule.arrival}} </td>
-					<td> {{schedule.departure}} </td>
-				</form>
-			</tr>
-		{% endif %}
-	{% endif %}
-{% endfor %}
-</table>
-</div>
-</div>
+		{% for schedule in child.recent_schedules %}
+			{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
+				{% if not schedule.expected %}
+					<tr>
+						<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
+							{% csrf_token %}
+							<td>
+								<input type="submit" value="x" class="btn btn-danger btn-sm">
+							</td>
+							<td> {{schedule.arrival}} </td>
+							<td> {{schedule.departure}} </td>
+						</form>
+					</tr>
+				{% endif %}
+			{% endif %}
+		{% endfor %}
 
-<div class="pt-3">
-<h4>Heures de présence récentes :</h4>
-<div class="border rounded">
-<table class="table table-striped">
-	<thead>
-		<th> </th>
-		<th> Heure d'arrivé </th>
-		<th> Heure de départ </th>
-	</thead>
-{% for schedule in child.schedule_set.recent_schedules %}
-	{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
-		{% if not schedule.expected %}
-			<tr>
-				<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
-					{% csrf_token %}
-					<td>
-						<input type="submit" value="x" class="btn btn-danger btn-sm">
-					</td>
-					<td> {{schedule.arrival}} </td>
-					<td> {{schedule.departure}} </td>
-				</form>
-			</tr>
-		{% endif %}
-	{% endif %}
-{% endfor %}
-</table>
+	</table>
 </div>
+{% else %}
+	<p></i>{{child.first_name}} n'a encore jamais été à la garderie.</p></i>
+{% endif %}
 </div>
 
 
