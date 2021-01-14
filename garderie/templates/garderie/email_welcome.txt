@@ -1,0 +1,11 @@
+Bonjour, 
+
+Votre compte Garderie++ a bien été créé. Vos enregistrements sont les suivants :
+Identifiant : {{ id }}
+Mot de passe : {{ pw }}
+
+Vous pourrez les changer après votre première connexion.
+
+Cordialement, 
+
+L'équipe LoremIpsum

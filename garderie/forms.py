@@ -2,6 +2,8 @@ from django import forms
 from django.core.mail import send_mail
 from .models import Parent, Child, HourlyRate, Schedule, ReliablePerson
 from django.contrib.auth.models import User
+from django.template import Context
+from django.template.loader import get_template
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
@@ -30,7 +32,7 @@ class NewUserForm(forms.ModelForm):
 		new_parent = super().save(commit=False)
 		if commit:
 		
-			if(settings.DEBUG):
+			if settings.DEBUG:
 				random_username='test'
 				random_password='test'
 			else:
@@ -45,11 +47,12 @@ class NewUserForm(forms.ModelForm):
 			user.save()
 			new_parent.uid_id=user.id
 			new_parent.save()
-			send_mail('Bienvenue sur Garderie++', # TODO Message évidemment temporaire, à compléter
-								'Voici vos identifiants :\nLogin : '+random_username+
-								'\nMot de passe : '+random_password, 
-								'a@b.com', 
-								[user.email])
+			
+			raw_data=get_template('garderie/email_welcome.txt')
+			data_context=({'id':random_username, 'pw':random_password})
+			text_data=raw_data.render(data_context)
+			
+			send_mail("Bienvenue sur Garderie++", text_data, 'a@b.com', [user.email])
 		return new_parent
 		
 # Formulaire de modification d'un parent 
