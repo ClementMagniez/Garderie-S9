@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-import datetime
+from datetime import datetime, timedelta, date, time
+from math import ceil, floor
 
 # Managers
 
@@ -13,7 +14,7 @@ class ScheduleManager(models.Manager):
 
 	# Schedules ayant commencé il y a moins de 30 jours		
 	def recent_schedules(self):
-		return super().get_queryset().filter(arrival__gte=datetime.datetime.today()-datetime.timedelta(days=30))
+		return super().get_queryset().filter(arrival__gte=datetime.today()-timedelta(days=30))
 
 class ChildManager(models.Manager):
 	# Renvoie un array de Schedules où chaque schedule correspond à Child#closest_expected_schedule
@@ -27,16 +28,16 @@ class ChildManager(models.Manager):
 		return res	
 
 
-	# Appelle Child#generate_bill sur chaque Child existant avec _start_ et _end_
-	def generate_all_bills(self, start, end):
+	# Appelle Child#generate_bill sur chaque Child existant avec month et year 
+	def generate_all_bills(self, month, year):
 		for child in super().all():
-			child.generate_bill(start, end)
+			child.generate_bill(month, year)
 
 	# Wrapper de ChildManager#generate_all_bills : l'appelle sur les 30 derniers jours
 	def generate_monthly_bills(self):
-		end=timezone.localtime()
-		start=end-datetime.timedelta(days=30)
-		self.generate_all_bills(start, end)
+		month=timezone.now().month
+		year=timezone.now().year
+		self.generate_all_bills(month, year)
 
 # Modèles
 
@@ -81,8 +82,8 @@ class Child(models.Model):
 			
 		# on récupère un schedule en calculant celui dont l'arrivée est la
 		# plus proche de l'arrivée réelle, à trois heures près
-		greater=self.schedule_set.filter(expected=True, arrival__gte=schedule.arrival, arrival__lte=schedule.arrival+datetime.timedelta(hours=3)).order_by('arrival').first()
-		lesser=self.schedule_set.filter(expected=True, arrival__lte=schedule.arrival, arrival__gte=schedule.arrival-datetime.timedelta(hours=3)).order_by('-arrival').first()
+		greater=self.schedule_set.filter(expected=True, arrival__gte=schedule.arrival, arrival__lte=schedule.arrival+timedelta(hours=3)).order_by('arrival').first()
+		lesser=self.schedule_set.filter(expected=True, arrival__lte=schedule.arrival, arrival__gte=schedule.arrival-timedelta(hours=3)).order_by('-arrival').first()
 
 		closest=None
 
@@ -108,18 +109,64 @@ class Child(models.Model):
 		else:
 			return self.closest_expected_schedule(ongoing)
 
-	# Renvoie un Bill calculé via les Schedules ayant commencé avant _start_ et fini avant _end_
-	def generate_bill(self, start, end): 
-		schedules=self.schedule_set.filter(arrival__gte=start, departure__lte=end)
-		bill=Bill(child=self, amount=0, paid=False, date_start=start, date_end=end)
-#		bill.save()
-		bill.calc_amount(schedules)		
+	# Renvoie un Bill calculé via les Schedules sur le mois month en l'an year
+	def generate_bill(self, month, year): 
+		try:
+			bill=Bill.objects.get(child=self, month=month, year=year)
+			bill.calc_amount() # appelle bill.save()
+		except Bill.DoesNotExist:
+			pass # rien à calculer si l'enfant n'a pas été présent
 
 
 class HourlyRate(models.Model):
 	value=models.FloatField()
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin", null=True)
+		
+		
+class Bill(models.Model):
+
+	# Tuple "numéro dans la DB, valeur lisible" : on convertit donc le numéro en un string
+	MONTH=[(m, date(1900, m, 1).strftime('%B'))  for m in range(1,13)]
+	YEAR=[(y, date(y, 1,1).strftime('Y')) for y in range(2000,timezone.now().year+1)]
+
+	child=models.ForeignKey(Child, on_delete=models.CASCADE)
+	amount=models.FloatField(default=0)
+	month=models.IntegerField(choices=MONTH, default=timezone.now().month)
+	year=models.IntegerField(choices=YEAR, default=timezone.now().year)
+	
+	# Enregistre _amount_ à partir des _schedules_ fournis dans schedule_set
+	# Ne valide pas que ces schedules sont entre date_start et date_end 
+	def calc_amount(self):
+		amount=0
+		for schedule in self.schedule_set.all():
+			temp_arrival=schedule.arrival
+			temp_departure=schedule.departure
+
+			temp_arrival_minute=floor(schedule.arrival.minute/30)*30
+		
+			# Logique en cas où on arrondit à 60 		
+			temp_departure_minute=ceil(schedule.departure.minute/30)*30
+			temp_departure_hour=schedule.departure.hour
+			if temp_departure_minute==60:
+				temp_departure_minute=0
+				temp_departure_hour+=1
+	
+			temp_arrival=temp_arrival.replace(hour=temp_arrival.hour, 
+																					minute=temp_arrival_minute,
+																					second=0)
+			temp_departure=temp_departure.replace(hour=temp_departure_hour, 
+																						minute=temp_departure_minute,
+																						second=0)
+			
+			duration=(temp_departure-temp_arrival).seconds/3600
+			
+			# round pour éliminer les millisecondes inutiles et avoir un int
+			amount+=round(duration*schedule.rate.value)
+
+		self.amount=amount
+		self.save()		
+		
 		
 class Schedule(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE)
@@ -128,6 +175,7 @@ class Schedule(models.Model):
 	departure=models.DateTimeField('Heure de départ', null=True)
 	expected=models.BooleanField()
 	recurring=models.BooleanField(default=True)
+	bill=models.ForeignKey(Bill, null=True, on_delete=models.DO_NOTHING)
 
 	objects=ScheduleManager()
 
@@ -141,7 +189,7 @@ class Schedule(models.Model):
 
 	# Renvoie True si le schedule a commencé au cours des 30 derniers jours
 	def in_past_month(self):
-		last_month=datetime.datetime.today()-datetime.timedelta(days=30)
+		last_month=datetime.today()-timedelta(days=30)
 		return self.arrival>last_month
 
 	
@@ -157,20 +205,4 @@ class ReliablePerson(models.Model):
 	def fullname(self):
 		return str(self)	
 
-
-class Bill(models.Model):
-	child=models.ForeignKey(Child, on_delete=models.CASCADE)
-	amount=models.FloatField()
-	date_start=models.DateTimeField("Date de départ")
-	date_end=models.DateTimeField("Date de fin")
-	
-	# Enregistre _amount_ à partir des _schedules_ fournis dans schedule_set
-	# Ne valide pas que ces schedules sont entre date_start et date_end 
-	def calc_amount(self, schedule_set):
-		amount=0.0
-		for schedule in schedule_set:
-			time_spent=(schedule.departure-schedule.arrival)
-			amount+=(time_spent.seconds/3600*schedule.rate.value)
-		self.amount=amount
-		self.save()		
 	

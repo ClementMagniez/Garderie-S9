@@ -163,7 +163,6 @@ class NewScheduleForm(forms.ModelForm):
 	# un autre fait partir l'enfant après que le nouveau l'ait fait arriver
 	def clean(self):
 		cleaned_data = super().clean()
-		
 		new_arrival=cleaned_data.get('arrival')
 		new_departure=cleaned_data.get('departure')
 

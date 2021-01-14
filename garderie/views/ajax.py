@@ -2,10 +2,9 @@ from ..models import Child, HourlyRate, Schedule
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime
+from ..utils import get_or_create_bill
 
 # Contient les views répondant à une requête AJAX
-
-
 
 # Enregistre l'heure d'arrivée d'un enfant 
 def AjaxChildCreateArrival(request):
@@ -25,6 +24,8 @@ def AjaxChildCreateArrival(request):
 	schedule.expected=False
 	schedule.rate=HourlyRate.objects.latest('id')
 	schedule.save()
+
+	get_or_create_bill(schedule)
 
 	data = {
 	'name': child_name,

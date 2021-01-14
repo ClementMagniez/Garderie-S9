@@ -21,10 +21,10 @@
 				<a href="{% url 'child_profile' bill.child.id %}">{{ bill.child.first_name }}</a>
 			</td>
 			<td> 
-				{{bill.date_start | date:"d/m/y"}} - {{ bill.date_end | date:"d/m/y" }}
+				{{bill.month | stringformat:'02d'}}/{{ bill.year}}
 			</td>
 			<td>
-				{{ bill.amount | floatformat:'2' }}
+				{{ bill.amount | floatformat:'2'}}€
 			</td>
 		</tr>
 		{% endfor %}

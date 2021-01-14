@@ -24,5 +24,5 @@ class BillsListView(generic.ListView):
 	context_object_name='bills_list'
 
 	def get_queryset(self):
-		return Bill.objects.all().order_by('-date_start')
+		return Bill.objects.all().order_by('-month')
 

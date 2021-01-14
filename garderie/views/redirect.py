@@ -1,20 +1,15 @@
-from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import render, get_object_or_404
-from ..models import Child, Parent, HourlyRate, Schedule, ReliablePerson
+from ..models import Child
 from django.urls import reverse
 from django.views.generic import RedirectView
-from django.utils import timezone
-from django.views.generic.detail import SingleObjectMixin
-from ..forms import *
 
-# Contient les views redirigeant l'utilisateur'
+# Contient les views redirigeant l'utilisateur vers une autre view
 
 
 # Redirection accueil -> login
 class HomeRedirectView(RedirectView):
 	def get_redirect_url(self, *args, **kwargs):
 		return reverse('login')
-
 
 
 # Appelle ChildManager#generate_monthly_bills et renvoie sur admin_index
