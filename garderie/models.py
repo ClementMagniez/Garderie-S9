@@ -43,7 +43,7 @@ class ChildManager(models.Manager):
 
 class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
-	phone=models.CharField(max_length=20, null=True)
+	phone=models.CharField(max_length=20, null=True, verbose_name="Téléphone")
 
 
 	def __str__(self):
@@ -54,8 +54,8 @@ class Parent(models.Model):
 
 class Child(models.Model):
 	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
-	last_name=models.CharField(max_length=100, null=True)
-	first_name=models.CharField(max_length=100, null=True)
+	first_name=models.CharField(max_length=100, null=True, verbose_name="Prénom")
+	last_name=models.CharField(max_length=100, null=True, verbose_name="Nom")
 
 	objects=ChildManager()
 
@@ -119,7 +119,7 @@ class Child(models.Model):
 
 
 class HourlyRate(models.Model):
-	value=models.FloatField()
+	value=models.FloatField(verbose_name="Taux horaire")
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin", null=True)
 		
@@ -130,10 +130,11 @@ class Bill(models.Model):
 	MONTH=[(m, date(1900, m, 1).strftime('%B'))  for m in range(1,13)]
 	YEAR=[(y, date(y, 1,1).strftime('Y')) for y in range(2000,timezone.now().year+1)]
 
-	child=models.ForeignKey(Child, on_delete=models.CASCADE)
-	amount=models.FloatField(default=0)
-	month=models.IntegerField(choices=MONTH, default=timezone.now().month)
-	year=models.IntegerField(choices=YEAR, default=timezone.now().year)
+
+	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
+	amount=models.FloatField(default=0, verbose_name="Montant total")
+	month=models.IntegerField(choices=MONTH, default=timezone.now().month, verbose_name="Mois")
+	year=models.IntegerField(choices=YEAR, default=timezone.now().year, verbose_name="Année")
 	
 	# Enregistre _amount_ à partir des _schedules_ fournis dans schedule_set
 	# Ne valide pas que ces schedules sont entre date_start et date_end 
@@ -169,12 +170,12 @@ class Bill(models.Model):
 		
 		
 class Schedule(models.Model):
-	child=models.ForeignKey(Child, on_delete=models.CASCADE)
+	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant")
 	rate=models.ForeignKey(HourlyRate, on_delete=models.CASCADE, null=True)
 	arrival=models.DateTimeField('Heure d\'arrivée')
 	departure=models.DateTimeField('Heure de départ', null=True)
 	expected=models.BooleanField()
-	recurring=models.BooleanField(default=True)
+	recurring=models.BooleanField(verbose_name="Plage horaire répétitive", default=True)
 	bill=models.ForeignKey(Bill, null=True, on_delete=models.DO_NOTHING)
 
 	objects=ScheduleManager()
@@ -195,9 +196,9 @@ class Schedule(models.Model):
 	
 class ReliablePerson(models.Model):
 	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
-	first_name=models.CharField(max_length=100)
-	last_name=models.CharField(max_length=100)
-	phone=models.CharField(max_length=20, null=True) 
+	first_name=models.CharField(max_length=100, verbose_name="Préom")
+	last_name=models.CharField(max_length=100, verbose_name="Nom")
+	phone=models.CharField(max_length=20, null=True, verbose_name="Téléphone") 
 
 	def __str__(self):
 		return self.first_name+" "+self.last_name
