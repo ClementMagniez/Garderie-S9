@@ -125,6 +125,12 @@ class Child(models.Model):
 	def expected_schedules(self):
 		return self.schedule_set.filter(expected=True)
 
+	# Dernier Bill par date
+	def last_bill(self):
+		today=timezone.now()
+		bills=self.bill_set.filter(year=today.year, month=today.month)
+			
+		return bills[0] if bills else None
 
 
 class HourlyRate(models.Model):
@@ -150,26 +156,8 @@ class Bill(models.Model):
 	def calc_amount(self):
 		amount=0
 		for schedule in self.schedule_set.all():
-			temp_arrival=schedule.arrival
-			temp_departure=schedule.departure
-
-			temp_arrival_minute=floor(schedule.arrival.minute/30)*30
-		
-			# Logique en cas où on arrondit à 60 		
-			temp_departure_minute=ceil(schedule.departure.minute/30)*30
-			temp_departure_hour=schedule.departure.hour
-			if temp_departure_minute==60:
-				temp_departure_minute=0
-				temp_departure_hour+=1
-	
-			temp_arrival=temp_arrival.replace(hour=temp_arrival.hour, 
-																					minute=temp_arrival_minute,
-																					second=0)
-			temp_departure=temp_departure.replace(hour=temp_departure_hour, 
-																						minute=temp_departure_minute,
-																						second=0)
-			
-			duration=(temp_departure-temp_arrival).seconds/3600
+			arrival, departure=schedule.rounded_arrival_departure()
+			duration=(departure-arrival).seconds/3600
 			
 			# round pour éliminer les millisecondes inutiles et avoir un int
 			amount+=round(duration*schedule.rate.value)
@@ -202,7 +190,40 @@ class Schedule(models.Model):
 		last_month=datetime.today()-timedelta(days=30)
 		return self.arrival>last_month
 
+	# Renvoie un tuple d'int (arrival, departure) où arrival est 
+	# arrondi à la demi-heure inférieure et departure à la demi-heure supérieure
+	# par rapport aux heures réelles
+	# Exemple : si le Schedule enregisre arrival=7:03 et departure=8:34, 
+	# rounded_arrival_departure renverra (7:00, 8:30) 
+
+	def rounded_arrival(self):
+		temp_arrival=self.arrival
+		arrival_minute=floor(self.arrival.minute/30)*30
+		temp_arrival=self.arrival.replace(minute=arrival_minute)
+		return temp_arrival
+
+	def rounded_departure(self):
+		temp_departure=self.departure				
+		# Logique en cas où on arrondit à 60 : Datetime.minute accepte [0..59] 		
+		departure_minute=ceil(self.departure.minute/30)*30
+		departure_hour=self.departure.hour
+		if departure_minute==60:
+			departure_minute=0
+			departure_hour+=1
+
+		temp_departure=self.departure.replace(hour=departure_hour, minute=departure_minute)
+		return temp_departure
+		
+	# Renvoie un tuple d'int (arrival, departure) ; voir Schedule#rounded_arrival
+	# et Schedule#rounded_departure
+	def rounded_arrival_departure(self):
+		return (self.rounded_arrival(), self.rounded_departure())	
 	
+	
+	
+# Personne de confiance : pas responsable légal d'un enfant, mais susceptible 
+# d'aller le chercher et devant donc être connu	du système
+# N'interagit pas directement avec le système
 class ReliablePerson(models.Model):
 	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
 	first_name=models.CharField(max_length=100, verbose_name="Préom")

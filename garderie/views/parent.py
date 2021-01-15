@@ -2,6 +2,7 @@ from django.views import generic
 from ..models import Child, Parent, ReliablePerson
 from ..forms import ParentUpdateForm, NewReliableForm, NewChildFormParent, NewUserForm
 from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 
 # Contient les views concernant les parents 

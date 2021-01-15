@@ -43,7 +43,7 @@
 </div>
 
 <div class="pt-3">
-	<table>
+	<table class="table table-striped border">
 		<thead>
 			<tr>
 				<th>Personnes de confiance</th>
@@ -64,6 +64,31 @@
 	{% endfor %}
 	</table>
 </div>
+<div class="pt-3">
+	<table class="table table-striped border">
+		<thead>
+			<tr>
+				<th>Facture du mois par enfant</th>
+			</tr>
+		</thead>
+	{% for child in parent.child_set.all %}
+		<tr>
+		{% with bill=child.last_bill %}
+		{% if bill %}
+			<td>
+					{{child.fullname}}
+			</td>
+			<td> {{bill.month|stringformat:'02d'}}/{{bill.year}}
+			</td>
+			<td>
+				{{bill.amount}}€
+			</td>
+		</tr>
+		{% endif %}
+		{% endwith %}
+	{% endfor %}
+	</table>
+</div>
 
 <div class="pt-3">
 	<h3>Inscrire un enfant</h3>
@@ -76,6 +101,9 @@
 		<input type="submit" value="Valider" class="btn btn-primary">
 	</form>
 </div>
+	
+	
+	
 	
 <div class="pt-3">
 	<h3>Ajouter une personne de confiance</h3>
