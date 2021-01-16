@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta, date, time
 from math import ceil, floor
+import garderie.utils 
 
 # Managers
 
@@ -33,13 +34,7 @@ class ChildManager(models.Manager):
 		for child in super().all():
 			child.generate_bill(month, year)
 
-	# Wrapper de ChildManager#generate_all_bills : l'appelle sur les 30 derniers jours
-	def generate_monthly_bills(self):
-		month=timezone.now().month
-		year=timezone.now().year
-		self.generate_all_bills(month, year)
-
-# Modèles
+### Modèles
 
 class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
@@ -61,6 +56,8 @@ class Child(models.Model):
 
 	def __str__(self):
 		return self.first_name+" "+self.last_name
+		
+	### Méthodes de manipulation du modèle
 
 	def fullname(self):
 		return str(self)	
@@ -82,21 +79,22 @@ class Child(models.Model):
 			
 		# on récupère un schedule en calculant celui dont l'arrivée est la
 		# plus proche de l'arrivée réelle, à trois heures près
-		greater=self.schedule_set.filter(expected=True, arrival__gte=schedule.arrival, arrival__lte=schedule.arrival+timedelta(hours=3)).order_by('arrival').first()
-		lesser=self.schedule_set.filter(expected=True, arrival__lte=schedule.arrival, arrival__gte=schedule.arrival-timedelta(hours=3)).order_by('-arrival').first()
+		greater=self.schedule_set.filter(expected=True, arrival__gte=schedule.arrival,
+																		 arrival__lte=schedule.arrival+timedelta(hours=3))\
+																		 .order_by('arrival').first()
+		lesser=self.schedule_set.filter(expected=True, arrival__lte=schedule.arrival, 
+																		arrival__gte=schedule.arrival-timedelta(hours=3))\
+																		.order_by('-arrival').first()
 
 		closest=None
 
-		if greater and lesser: # TODO créer un comparateur à Schedule ?
+		if greater and lesser:
 			if abs(greater.arrival-schedule.arrival) < abs(lesser.arrival - schedule.arrival):
 				closest=greater
 			else: 
 				closest=lesser
 		else:
 				closest=greater if greater else lesser
-#		print(f'Greater : {greater}') 
-#		print(f'Lesser : {lesser}')				
-#		print(f'Closest expected : {closest}')
 		return closest 
 		
 	# Permet de récupérer le dernier schedule incomplet (normalement unique) via 
@@ -109,14 +107,6 @@ class Child(models.Model):
 		else:
 			return self.closest_expected_schedule(ongoing)
 
-	# Renvoie un Bill calculé via les Schedules sur le mois month en l'an year
-	def generate_bill(self, month, year): 
-		try:
-			bill=Bill.objects.get(child=self, month=month, year=year)
-			bill.calc_amount() # appelle bill.save()
-		except Bill.DoesNotExist:
-			pass # rien à calculer si l'enfant n'a pas été présent
-
 	# Schedules ayant commencé il y a moins de 30 jours		
 	def recent_schedules(self):
 		return self.schedule_set.filter(arrival__gte=datetime.today()-timedelta(days=30))
@@ -125,7 +115,7 @@ class Child(models.Model):
 	def expected_schedules(self):
 		return self.schedule_set.filter(expected=True)
 
-	# Dernier Bill par date
+	# Bill du mois courant, None s'il n'y en a pas
 	def last_bill(self):
 		today=timezone.now()
 		bills=self.bill_set.filter(year=today.year, month=today.month)
@@ -150,20 +140,25 @@ class Bill(models.Model):
 	amount=models.FloatField(default=0, verbose_name="Montant total")
 	month=models.IntegerField(choices=MONTH, default=timezone.now().month, verbose_name="Mois")
 	year=models.IntegerField(choices=YEAR, default=timezone.now().year, verbose_name="Année")
+			
+	### Méthodes de manipulation du modèle
+
 	
-	# Enregistre _amount_ à partir des _schedules_ fournis dans schedule_set
-	# Ne valide pas que ces schedules sont entre date_start et date_end 
+	# Return le coût d'un schedule 
+	def calc_amount_from_schedule(self, schedule):
+		arrival, departure=schedule.rounded_arrival_departure()
+		duration=(departure-arrival).seconds/3600
+		return round(duration*schedule.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
+	
+	# Enregistre _amount_ à partir des Schedules associés à self
 	def calc_amount(self):
+		print("dans calc amunt")
 		amount=0
 		for schedule in self.schedule_set.all():
-			arrival, departure=schedule.rounded_arrival_departure()
-			duration=(departure-arrival).seconds/3600
-			
-			# round pour éliminer les millisecondes inutiles et avoir un int
-			amount+=round(duration*schedule.rate.value)
-
+			print(str(schedule.id) + " " + str(schedule))
+			amount+=self.calc_amount_from_schedule(schedule)
 		self.amount=amount
-		self.save()		
+		self.save()
 		
 		
 class Schedule(models.Model):
@@ -179,8 +174,36 @@ class Schedule(models.Model):
 
 	def __str__(self):
 		return str(self.arrival)+" -- "+str(self.departure)
+		
+	# Automatise l'interaction entre Schedule et Bill à l'ajout/édition du Schedule
+	# Trois cas :
+	# 1. Création du schedule : utils.get_or_create_bill lui attribue un Bill
+	# 2. Edition de schedule.departure ou schedule.arrival : on recalcule la valeur de Bill 
+	# 	 en prenant ce changement en commpte
+	# 3. Edition d'un autre champ : on ne fait rien de particulier 
+	def save(self, *args, **kwargs):
+		old=Schedule.objects.filter(id=getattr(self,'id',None)).first()
+		print("dans save")
+		if not old:
+			bill=garderie.utils.get_or_create_bill(self)
+			self.bill=bill
+		super().save()	
+		if old:
+			print("après old check")
+			if old.arrival!=self.arrival or old.departure!=self.departure or not old.departure:
+				print("après diff check, calcul montant : " +str(self.departure))
+				self.bill.calc_amount()
 	
-	# Renvoie True sile schedule n'a pas encore de départ, False sinon
+	# Recalcule la facture associée après avoir supprimé self
+	def delete(self, *args, **kwargs):
+		print("dans delete")
+		bill=self.bill
+		super().delete()
+		self.bill.calc_amount()
+	
+	### Méthodes de manipulation du modèle
+	
+	# Renvoie True si le schedule n'a pas encore de départ, False sinon
 	def incomplete(self):
 		return self.departure==None
 		
@@ -203,6 +226,8 @@ class Schedule(models.Model):
 		return temp_arrival
 
 	def rounded_departure(self):
+		if not self.departure: # peut arriver si l'enfant est actuellement présent
+			return None
 		temp_departure=self.departure				
 		# Logique en cas où on arrondit à 60 : Datetime.minute accepte [0..59] 		
 		departure_minute=ceil(self.departure.minute/30)*30
@@ -219,7 +244,13 @@ class Schedule(models.Model):
 	def rounded_arrival_departure(self):
 		return (self.rounded_arrival(), self.rounded_departure())	
 	
-	
+	# Ajoute la durée
+	def update_bill(self):
+		if not self.bill:
+			return None
+		self.bill.calc_amount()
+		
+			
 	
 # Personne de confiance : pas responsable légal d'un enfant, mais susceptible 
 # d'aller le chercher et devant donc être connu	du système

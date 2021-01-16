@@ -74,6 +74,14 @@ class ScheduleDeleteView(generic.edit.DeleteView):
 #	template_name='garderie/child_garde	profile.html'
 	model = Schedule
 	
+#	def delete(self, request, *args, **kwargs):
+#		self.object=self.get_object()
+#		self.success_url=self.get_success_url()
+#		self.object.delete()
+#		self.object.update_bill()
+#		return HttpResponseRedirect(success_url)
+		
+	
 	def get_success_url(self):
 		return self.request.GET.get('next', reverse('children_list')) # évite un changement de page
 

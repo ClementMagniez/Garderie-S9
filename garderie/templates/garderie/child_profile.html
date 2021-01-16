@@ -61,6 +61,9 @@ Créez un horaire d'accueil via le formulaire en bas de page.</i></p>
 <div class="border rounded">
 	<table class="table table-striped">
 	<thead>
+		{% if user.is_staff %}	
+			<th> </th>
+		{% endif %}
 		<th> Heure d'arrivée </th>
 		<th> Heure de départ </th>
 	</thead>
@@ -68,6 +71,14 @@ Créez un horaire d'accueil via le formulaire en bas de page.</i></p>
 			{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
 				{% if not schedule.expected %}
 					<tr>
+						{% if user.is_staff %}
+							<td>
+						<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
+							{% csrf_token %}
+								<input type="submit" value="x" class="btn btn-danger btn-sm">
+						</form>
+							</td>
+						{% endif %}
 							<td> {{schedule.rounded_arrival|date:'d/m H:i'}} </td>
 							<td> {{schedule.rounded_departure|date:'d/m H:i'}} </td>
 					</tr>
