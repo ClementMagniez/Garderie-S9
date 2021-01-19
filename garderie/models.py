@@ -218,7 +218,6 @@ class Schedule(models.Model):
 	# par rapport aux heures réelles
 	# Exemple : si le Schedule enregisre arrival=7:03 et departure=8:34, 
 	# rounded_arrival_departure renverra (7:00, 8:30) 
-
 	def rounded_arrival(self):
 		temp_arrival=self.arrival
 		arrival_minute=floor(self.arrival.minute/30)*30
@@ -243,13 +242,6 @@ class Schedule(models.Model):
 	# et Schedule#rounded_departure
 	def rounded_arrival_departure(self):
 		return (self.rounded_arrival(), self.rounded_departure())	
-	
-	# Ajoute la durée
-	def update_bill(self):
-		if not self.bill:
-			return None
-		self.bill.calc_amount()
-		
 			
 	
 # Personne de confiance : pas responsable légal d'un enfant, mais susceptible 
