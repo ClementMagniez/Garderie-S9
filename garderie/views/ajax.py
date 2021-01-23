@@ -10,17 +10,20 @@ def AjaxChildCreateArrival(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
 	child_name=child.first_name+" "+child.last_name
-					
+
+	# check si l'enfant est encore présent (date de départ pas encore remplie)
+	# Une exception peut avoir lieu s'il n'y a aucun Schedule associé à l'enfant, 
+	# ce qui en ce qui nous concerne ici revient au même : enfant pas encore là.
 	try:
 		if child.incomplete_schedule()!=None: # un schedule en cours 
 			return JsonResponse({'error': "L'enfant est déjà présent."})
 	except Schedule.DoesNotExist:
 		print(f'DoesNotExist raised sur {child}')
+		# TODO mais du coup, on renvoie quoi ?
 		
 	schedule=Schedule()
 	schedule.arrival=timezone.localtime()
 	schedule.child=child
-	schedule.expected=False
 	schedule.rate=HourlyRate.objects.latest('id')
 	schedule.save()
 
@@ -30,15 +33,6 @@ def AjaxChildCreateArrival(request):
 	'arrival': schedule.arrival
 	}
 	
-	
-	# Récupère le schedule le plus proche  s'il y en a un
-	closest=child.closest_expected_schedule(schedule)
-	data['expected_arrival']=closest.arrival if closest else 'N/A'
-	data['expected_departure']=closest.departure if closest else 'N/A'
-	
-	# check si l'enfant est encore présent (date de départ pas encore remplie)
-	# Une exception peut avoir lieu s'il n'y a aucun Schedule associé à l'enfant, 
-	# ce qui en ce qui nous concerne ici revient au même : enfant pas encore là.
 
 
 	return JsonResponse(data)

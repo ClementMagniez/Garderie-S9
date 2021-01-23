@@ -24,7 +24,8 @@ url_enfant=[
         path('enfant/<int:pk>/', views.ChildProfileView.as_view(), name='child_profile'),
         path('enfant/<int:pk>/update/', views.ChildUpdateView.as_view(), name='child_update'),
         path('enfant/<int:pk>/delete/', views.ChildDeleteView.as_view(), name='child_delete'),
-        path('enfant/<int:pk>/schedule/register/', views.CreateScheduleView.as_view(), name='schedule_register'),
+        path('enfant/<int:pk>/presence/register/', views.CreatePresenceView.as_view(), name='schedule_register'),
+        path('enfant/<int:fk>/presence/<int:pk>/delete/', views.PresenceDeleteView.as_view(), name='presence_delete'),
         path('enfant/<int:fk>/schedule/<int:pk>/delete/', views.ScheduleDeleteView.as_view(), name='schedule_delete'),
 ]
 

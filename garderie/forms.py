@@ -1,6 +1,6 @@
 from django import forms
 from django.core.mail import send_mail
-from .models import Parent, Child, HourlyRate, Schedule, ReliablePerson
+from .models import Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence
 from django.contrib.auth.models import User
 from django.template import Context
 from django.template.loader import get_template
@@ -80,7 +80,6 @@ class ParentUpdateForm(forms.ModelForm):
 		if commit:
 			parent=Parent.objects.get(uid=updated_user)
 			parent.phone=self.cleaned_data['phone']
-			print(parent.phone)
 			parent.save()
 			updated_user.save()
 		return updated_user
@@ -138,48 +137,35 @@ class ChildUpdateForm(forms.ModelForm):
 		model = Child
 		fields = ['first_name', 'last_name']
 
-	
-#from django.contrib import messages TODO ???
-	
-# Formulaire de création d'un Schedule pour un enfant donné
-class NewScheduleForm(forms.ModelForm):
+
+# Formulaire de création d'un ExpectedPresence pour un enfant donné
+class NewPresenceForm(forms.ModelForm):
+
 	class Meta:
-		model = Schedule
-		fields = [ 'arrival', 'departure']
+		model = ExpectedPresence
+		fields = ['day', 'period']
 
 	def __init__(self, *args, **kwargs):
 		self.child=Child.objects.get(pk=kwargs.pop('pk'))
 		super().__init__(*args, **kwargs)
 
 	def save(self, commit=True):
-		schedule=super().save(commit=False)
+		presence=super().save(commit=False)
 		if commit:
-			schedule.child=self.child
-			schedule.rate=HourlyRate.objects.all().latest('id')
-			schedule.expected=True
-			schedule.save()
-		return schedule
+			presence.child=self.child
+			presence.save()
+		return presence
 
-	# On valide que le nouveau schedule n'overlap pas un ancien
-	# Cas possibles : 
-	# le nouveau fait partir l'enfant après qu'un autre l'ait fait arriver
-	# un autre fait partir l'enfant après que le nouveau l'ait fait arriver
+	# On valide que le nouvel horaire n'overlap pas un ancien
 	def clean(self):
 		cleaned_data = super().clean()
-		new_arrival=cleaned_data.get('arrival')
-		new_departure=cleaned_data.get('departure')
-
-		if (new_arrival > new_departure):
-			raise ValidationError("Le départ est avant l'arrivée.")			
+		new_day=cleaned_data.get('day')
+		new_period=cleaned_data.get('period')
+				
+		all_presences_child=ExpectedPresence.objects.filter(child_id=self.child.id)
+		for presence in all_presences_child:
 		
-		all_schedules_child=Schedule.objects.filter(child_id=self.child.id, expected=True)
-		for schedule in all_schedules_child:
-		
-			if (schedule.arrival >= new_arrival and schedule.arrival <=	new_departure)\
-		 	or (new_arrival <=	schedule.departure and new_arrival >= schedule.arrival):
-				print('erreur de validation')
-				print(f"new_arrival : {new_arrival} - comparaison : {schedule.arrival}")
-				print(f"new_departure : {new_departure} - comparaison : {schedule.departure}")
+			if (presence.day==new_day and presence.period ==	new_period):
 				raise ValidationError("Le créneau voulu en chevauche un autre déjà existant.")
 		return self.cleaned_data
 			

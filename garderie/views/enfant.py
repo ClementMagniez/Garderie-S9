@@ -1,6 +1,6 @@
 from django.views import generic
-from ..models import Child, Schedule, Parent
-from ..forms import NewScheduleForm, ChildUpdateForm, NewChildFormAdmin
+from ..models import Child, Schedule, Parent, ExpectedPresence
+from ..forms import NewPresenceForm, ChildUpdateForm, NewChildFormAdmin
 from django.urls import reverse, reverse_lazy
 
 # Contient toutes les views manipulant principalement les Children
@@ -28,14 +28,14 @@ class ChildProfileView(generic.DetailView):
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['schedule_form'] = NewScheduleForm(pk=self.kwargs['pk'])
+		context['schedule_form'] = NewPresenceForm(pk=self.kwargs['pk'])
 		context['action']=reverse('schedule_register', kwargs={'pk':self.kwargs['pk']}) # même URL donc sûrement améliorable
 		context['personal_data_form'] = ChildUpdateForm(instance=self.object)	
 		return context
 	
 # Formulaire de création d'un schedule
-class CreateScheduleView(generic.edit.CreateView):
-	form_class=NewScheduleForm
+class CreatePresenceView(generic.edit.CreateView):
+	form_class=NewPresenceForm
 	def get_form_kwargs(self):
 		kwargs=super().get_form_kwargs()
 		kwargs['pk']=self.kwargs['pk']
@@ -43,7 +43,7 @@ class CreateScheduleView(generic.edit.CreateView):
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['action']=reverse('schedule_register', kwargs={'pk':self.kwargs['pk']}) # même URL donc sûrement améliorable
+		context['action']=reverse('schedule_register', kwargs={'pk':self.kwargs['pk']}) # TODO même URL donc sûrement améliorable
 		return context
 			
 	def get_success_url(self):
@@ -69,12 +69,20 @@ class NewChildView(generic.edit.CreateView):
 	success_url = reverse_lazy('children_list') # TODO plutôt renvoyer sur le profil ?
 
 
-# Formulaire de suppression d'un schedule
+# Formulaire de suppression d'une ExpectedPresence
+class PresenceDeleteView(generic.edit.DeleteView):
+	model = ExpectedPresence
+	
+	def get_success_url(self):
+		return self.request.GET.get('next', reverse('children_list')) # évite un changement de page
+
+# Formulaire de suppression d'un Schedule
 class ScheduleDeleteView(generic.edit.DeleteView):
 	model = Schedule
 	
 	def get_success_url(self):
 		return self.request.GET.get('next', reverse('children_list')) # évite un changement de page
+
 
 
 # Formulaire de suppression d'un enfant
