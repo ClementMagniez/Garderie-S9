@@ -83,17 +83,14 @@ function addChildRow(data, child_id) {
 		<td> <button class="btn btn-danger btn-sm" onclick="removeArrival(${data['sid']})">x</button>		
 		<td><a href="${child_id}">${data['name']}</a></td>\
 		<td class="in_arrival">${formattedDateFromString(arrival)}</td>\
-		<td class="in_departure"></td><td class="button_departure"></td>\ 
-		<td class="in_expected_arrival">${formattedDateFromString(expected_arrival)}</td>\
-		<td class="in_expected_departure">${formattedDateFromString(expected_departure)}</td></tr>`);
+		<td class="in_departure"></td><td class="button_departure"></td></tr>`);
 }
 
 
 
 $(document).ready(function() {
-		
-
-	// enfants absents : au clic, envoie (async) l'id de l'enfant cliqué
+	
+	// enfants absents : au clic, envoie l'id de l'enfant cliqué
 	// une fois le Schedule ajouté, appelle addChildRow avec les données reçues
 	
 	$('.child_out').click( function() {

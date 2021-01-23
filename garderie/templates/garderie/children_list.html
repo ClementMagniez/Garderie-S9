@@ -23,8 +23,6 @@
 				<th colspan="2">Enfant</th>
 				<th>Arrivée</th>
 				<th colspan="2">Départ</th>
-				<th>Arrivée prévue</th>
-				<th>Départ prévu</th>
 			</tr>
 		</thead>
 			{% for schedule in children_list.current_schedules %}
@@ -48,22 +46,6 @@
 						on doit check individuellement .arrival et .departure, on enregistre
 						donc closest_to_incomplete dans une variable
 						{% endcomment %}
-						{% with closest=child.closest_to_incomplete %}
-						<td class="in_expected_arrival">
-							{% if closest %}
-								{{closest.arrival}}
-							{% else %}
-								N/A
-							{% endif %}
-						</td>
-						<td class="in_expected_departure">
-							{% if closest %}
-								{{closest.departure}}
-							{% else %}
-								N/A
-							{% endif %}
-						</td>
-						{% endwith%} 
 					</tr>
 				{% endwith %}
 			{% endfor %}
