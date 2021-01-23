@@ -12,19 +12,49 @@
 	var url_edit="{% url 'ajax_edit_departure' %}";
 	var url_remove_arrival="{% url 'ajax_remove_arrival' %}";
 </script>
+
+<script type="text/javascript">
+
+	var data_tab1 = $('#table1').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 1, "asc" ]]
+		    		});
+
+	var data_tab2 = $('#table2').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 0, "asc" ]]
+			    	});
+	
+	$(document).ready( function () { data_tab1 } );
+
+	$(document).ready( function () { data_tab2 } );
+
+	function refresh_tab1() {
+		data_tab1.draw();
+	}
+
+</script>
+
 {% endblock %}
 {% block body %}
 
 <div class="container">
 	<h1>Liste des enfants présents</h1>
-	<table id="table1" class="table table-striped">
+	<table id="table1" class="display">
 		<thead>
 			<tr>
-				<th colspan="2">Enfant</th>
+				<th>Options</th>
+				<th>Enfant</th>
 				<th>Arrivée</th>
-				<th colspan="2">Départ</th>
+				<th>Départ</th>
+				<th>Options</th>
+				<th>Arrivée prévue</th>
+				<th>Départ prévu</th>
 			</tr>
 		</thead>
+		<tbody>
 			{% for schedule in children_list.current_schedules %}
 				{% with child=schedule.child %}
 
@@ -44,43 +74,49 @@
 					</tr>
 				{% endwith %}
 			{% endfor %}
-		<tbody>
 		</tbody>
 	</table>
 
 	<h1>Liste des enfants</h1>
-	<table id="table2" class="table table-striped">
+	<table id="table2" class="display">
 		<thead>
 			<tr>
 				<th>Enfant</th>
 				<th>Prochain horaire de présence</th>
+				{% if user.is_superuser %}
+					<th>Options</th>
+				{% endif %}
 			</tr>
 		</thead>
 		<tbody>
 			{% for child in children_list.all_children %}
-				<tr class="child_out" data-value="{{child.id}}">
-					<td>
-							<form method="POST" action="{% url 'child_delete' child.id  %}">
-						{% if user.is_superuser %}
+			<tr class="child_out" data-value="{{child.id}}" style="cursor: pointer;">
+				<td>
+					<a href="{% url 'child_profile' child.id %}">
+							{{child.fullname}}
+					</a>
+				</td> 
+				<td>
+					{% with presence=child.next_presence %}
+						{{ presence.0|date:'l d/m'|default_if_none:''}}
+						{% if presence.1 %}
+							{{ presence.1.get_period_display|lower }}
+						{% endif %}
+					{% endwith %}
+				</td>				
+				{% if user.is_superuser %}
+					<td> 
+						<form method="POST" action="{% url 'child_delete' child.id  %}">
 			 				{% csrf_token %}
 				 				<input type="submit" value="X" class="btn btn-danger btn-sm">
-						{% endif %}				
-								<a href="{% url 'child_profile' child.id %}">
-									{{child.fullname}}
-								</a>
 							</form>
 					</td> 
-					<td>
-						{% with presence=child.next_presence %}
-							{{ presence.0|date:'l d/m'|default_if_none:''}}
-							{% if presence.1 %}
-								{{ presence.1.get_period_display|lower }}
-							{% endif %}
-						{% endwith %}
-					</td>				
+					{% endif %}				
 				</tr>
 			{% endfor %}
 		</tbody>
 	</table>
 </div>
 {% endblock %}
+
+
