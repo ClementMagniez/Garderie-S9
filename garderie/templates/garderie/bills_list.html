@@ -8,7 +8,13 @@
 	var data_tab = $('#bill_tab').DataTable({
 			    		"ordering": true,
 			    		paging: false,
-			    		"order": [[ 0, "asc" ]]
+			    		"order": [[ 0, "asc" ]],
+			    		"language": {
+						    "emptyTable": "Aucune facture dans la base de donnée",
+						    "search":         "Rechercher :",
+						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
+    						"infoEmpty":      "Données 0 à 0 sur 0 entrée"
+						}
 		    		});
 
 	$(document).ready( function () { data_tab } );
