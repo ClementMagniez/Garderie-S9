@@ -183,6 +183,12 @@ class Schedule(models.Model):
 			departure_minute=0
 			departure_hour+=1
 
+		# Théoriquement, hour peut alors passer à 24 (cas où le départ a lieu entre 23:30 et 0:00),
+		# forçant à incrémenter le jour, pouvant amener à incrémenter le mois, 
+		# pouvant amener à incrémenter l'année
+		# On considère que ce scénario ne peut arriver en situation normale et on 
+		# l'ignore complètement
+
 		temp_departure=self.departure.replace(hour=departure_hour, minute=departure_minute)
 		return temp_departure
 		
@@ -224,7 +230,7 @@ class ExpectedPresence(models.Model):
 		# Détails : weekday() compte de 0 à 6, mais self.day de 1 à 7, donc +1
 		# si ce jour de la semaine est passée, on cherche la semaine suivante, sinon 
 		# celle-ci, donc 7 ou 0
-		return (today+timedelta(days=(-today.weekday())+self.day+week_determiner), self)
+		return (today+timedelta(days=(-today.weekday())+self.day-1+week_determiner), self)
 		
 
 	def __str__(self):

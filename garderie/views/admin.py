@@ -1,6 +1,6 @@
 from django.views import generic
 from ..forms import NewHourlyRateForm
-from ..models import Bill
+from ..models import Bill, HourlyRate
 from django.urls import reverse_lazy
 
 # Contient les views concernant l'administrateur du site
@@ -12,10 +12,14 @@ class AdminIndexView(generic.TemplateView):
 
 # Formulaire de création d'un nouveau taux horaire
 class NewHourlyRateView(generic.edit.CreateView):
-	template_name='garderie/forms/new_child.html'
+	template_name='garderie/forms/edit_rate_form.html'
 	form_class = NewHourlyRateForm
 	success_url = reverse_lazy('admin_index')
-
+	
+	def get_initial(self):
+		initial=super().get_initial()
+		initial['value']=HourlyRate.objects.latest('id').value
+		return initial
 
 
 # Liste des factures par ordre de date décroissante, fournit au HTML tous les Bills
