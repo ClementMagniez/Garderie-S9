@@ -11,8 +11,6 @@
 			    		"order": [[ 0, "asc" ]]
 		    		});
 
-	$(document).ready( function () { data_tab } );
-
 </script>
 {% endblock %}
 
@@ -42,7 +40,7 @@
 					on doit pouvoir faire plus élégant
 				{% endcomment %}
 				<form method="POST" action="{% url 'parent_delete' parent.uid_id  %}">
-   				{% csrf_token %}<input class="btn btn-danger btn-sm" type="submit" value="DELETE">
+   				{% csrf_token %}<input class="btn btn-danger btn-sm" type="submit" value="SUPPRIMER">
 				</form>
 			</td>
 		</tr>

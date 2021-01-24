@@ -15,21 +15,17 @@
 
 <script type="text/javascript">
 
-	var data_tab1 = $('#table1').DataTable({
+	let data_tab1 = $('#table1').DataTable({
 			    		"ordering": true,
 			    		paging: false,
 			    		"order": [[ 1, "asc" ]]
 		    		});
 
-	var data_tab2 = $('#table2').DataTable({
+	let data_tab2 = $('#table2').DataTable({
 			    		"ordering": true,
 			    		paging: false,
 			    		"order": [[ 0, "asc" ]]
 			    	});
-	
-	$(document).ready( function () { data_tab1 } );
-
-	$(document).ready( function () { data_tab2 } );
 
 </script>
 
