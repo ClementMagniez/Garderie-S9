@@ -1,6 +1,33 @@
 {% extends 'garderie/base.html' %}
 {% block title %}Profil de {{ child.first_name}} {{child.last_name}}{% endblock %}
 
+{% block scripts %}
+<script type="text/javascript">
+
+	var data_tab = $('#enfant_profile_presence_tab').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 1, "asc" ]],
+			    		"searching": false,
+			    		"columnDefs": [
+						    { "width": "10%", "targets": 0 }
+						  ]
+		    		});
+
+	var data_tab1 = $('#enfant_profile_recent_tab').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 1, "asc" ]],
+			    		"searching": false,
+		    		});
+
+	$(document).ready( function () { data_tab } );
+
+	$(document).ready( function () { data_tab1 } );
+
+</script>
+{% endblock %}
+
 {% block body %} 
 <div class="d-flex justify-content-center pt-3">
  <div class="bg-light p-4 border border-secondary rounded">
@@ -21,12 +48,12 @@
 </div>
 	
 <div class="pt-3">
-{% if child.expectedpresence_set %}
 	<h4>Heures de présence prévues :</h4>
-	<div class="border rounded">
-		<table class="table table-striped">
+{% if child.expectedpresence_set %}
+	<div>
+		<table id="enfant_profile_presence_tab" class="table table-striped table-bordered">
 			<thead>
-				<th> </th>
+				<th> Options </th>
 				<th> Jour </th>
 				<th> Période </th>
 			</thead>
@@ -55,11 +82,11 @@
 <div class="pt-3">
 <h4>Heures de présence récentes :</h4>
 {% if child.recent_schedules %}
-<div class="border rounded">
-	<table class="table table-striped">
+<div>
+	<table id="enfant_profile_recent_tab" class="table table-striped">
 	<thead>
 		{% if user.is_staff %}	
-			<th> </th>
+			<th> Options </th>
 		{% endif %}
 		<th> Heure d'arrivée </th>
 		<th> Heure de départ </th>
