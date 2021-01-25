@@ -61,11 +61,7 @@ class Child(models.Model):
 		return bills[0] if bills else None
 
 	def next_presence(self):
-		all_occurrences=[]
-		for presence in self.expectedpresence_set.all():
-			all_occurrences.append(presence.next_occurrence())
-		
-		
+		all_occurrences=[presence.next_occurrence() for presence in self.expectedpresence_set.all()]
 		# compare des tuples : on sait cependant que le premier item du tuple (un datetime)
 		# sera unique (puisque basé sur un ExpectedPresence unique), on ne sera donc pas amené à
 		# comparer des ExpectedPresence 
@@ -91,24 +87,15 @@ class Bill(models.Model):
 
 
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
-	amount=models.FloatField(default=0, verbose_name="Montant total")
 	month=models.IntegerField(choices=MONTH, default=timezone.now().month, verbose_name="Mois")
 	year=models.IntegerField(choices=YEAR, default=timezone.now().year, verbose_name="Année")
 			
 	### Méthodes de manipulation du modèle
 
-	
-	# Enregistre _amount_ à partir des Schedules associés à self
-	def calc_amount(self):
-		amount=0
-		for schedule in self.schedule_set.all():
-			amount+=schedule.calc_amount()
-		if amount==0:
-			self.delete()
-		else:
-			self.amount=amount
-			self.save()
-		return amount
+	# Renvoie la somme des Schedules associés à self
+	@property
+	def amount(self):
+		return sum([x.calc_amount() for x in self.schedule_set.all()])          
 		
 class Schedule(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant")
@@ -122,39 +109,27 @@ class Schedule(models.Model):
 	def __str__(self):
 		return str(self.arrival)+" -- "+str(self.departure)
 		
-	# Automatise l'interaction entre Schedule et Bill à l'ajout/édition du Schedule
-	# Trois cas :
-	# 1. Création du schedule : utils.get_or_create_bill lui attribue un Bill
-	# 2. Edition de schedule.departure : on recalcule la valeur de Bill 
-	# 	 en prenant ce changement en commpte
-	# 3. Edition d'un autre champ : on ne fait rien de particulier 
+	# Automatise l'association du Schedule à un Bill à la création selon utils.get_or_create_bill
 	def save(self, *args, **kwargs):
 		old=Schedule.objects.filter(id=getattr(self,'id',None)).first()
 		if not old:
 			bill=garderie.utils.get_or_create_bill(self)
 			self.bill=bill
 		super().save()	
-		if old:
-			if ((old.arrival!=self.arrival or old.departure!=self.departure) or not old.departure) and self.departure:
-				self.bill.calc_amount()
-	
+
+
 	# Recalcule la facture associée après avoir supprimé self
-	def delete(self, *args, **kwargs):
-		bill=self.bill
-		super().delete()
-		self.bill.calc_amount()
+	# TODO : décider si on supprime un Bill à 0€ ou pas
+#	def delete(self, *args, **kwargs):
+#		bill=self.bill
+#		super().delete()
+#		self.bill.calc_amount()
 	
 	### Méthodes de manipulation du modèle
 	
 	# Renvoie True si le schedule n'a pas encore de départ, False sinon
 	def incomplete(self):
 		return self.departure==None
-		
-
-	# Renvoie True si le schedule a commencé au cours des 30 derniers jours
-	def in_past_month(self):
-		last_month=timezone.now()-timedelta(days=30)
-		return self.arrival>last_month
 
 	# Renvoie un int arrival arrondi à la demi-heure inférieure
 	# par rapport à l'heure réelle

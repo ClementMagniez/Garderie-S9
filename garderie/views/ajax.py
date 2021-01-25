@@ -9,7 +9,7 @@ from ..utils import get_datetime_from_hhmm
 def AjaxChildCreateArrival(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
-	child_name=child.first_name+" "+child.last_name
+
 
 	# check si l'enfant est encore présent (date de départ pas encore remplie)
 	# Une exception peut avoir lieu s'il n'y a aucun Schedule associé à l'enfant, 
@@ -28,7 +28,7 @@ def AjaxChildCreateArrival(request):
 	schedule.save()
 
 	data = {
-	'name': child_name,
+	'name': child.fullname(),
 	'sid': schedule.id,
 	'arrival': schedule.arrival
 	}
