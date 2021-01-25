@@ -131,7 +131,7 @@ class Schedule(models.Model):
 	# Automatise l'interaction entre Schedule et Bill à l'ajout/édition du Schedule
 	# Trois cas :
 	# 1. Création du schedule : utils.get_or_create_bill lui attribue un Bill
-	# 2. Edition de schedule.departure ou schedule.arrival : on recalcule la valeur de Bill 
+	# 2. Edition de schedule.departure : on recalcule la valeur de Bill 
 	# 	 en prenant ce changement en commpte
 	# 3. Edition d'un autre champ : on ne fait rien de particulier 
 	def save(self, *args, **kwargs):
@@ -141,7 +141,7 @@ class Schedule(models.Model):
 			self.bill=bill
 		super().save()	
 		if old:
-			if old.arrival!=self.arrival or old.departure!=self.departure or not old.departure:
+			if ((old.arrival!=self.arrival or old.departure!=self.departure) or not old.departure) and self.departure:
 				self.bill.calc_amount()
 	
 	# Recalcule la facture associée après avoir supprimé self
@@ -183,6 +183,9 @@ class Schedule(models.Model):
 			departure_minute=0
 			departure_hour+=1
 
+		if departure_hour==24:
+			departure_hour-=1 
+
 		# Théoriquement, hour peut alors passer à 24 (cas où le départ a lieu entre 23:30 et 0:00),
 		# forçant à incrémenter le jour, pouvant amener à incrémenter le mois, 
 		# pouvant amener à incrémenter l'année
@@ -216,7 +219,7 @@ class ExpectedPresence(models.Model):
 	
 	@property
 	def hour_departure(self):
-		return 9 if self.periode==0 else 20
+		return 9 if self.period==0 else 20
 
 	# Renvoie un tuple (datetime, self)
 	# Exemple d'utilisation : si self.day==0 (lundi) et self.period=='Soir',
@@ -224,17 +227,17 @@ class ExpectedPresence(models.Model):
 	# donc un datetime (2021, 01, 25, 18, 0,0) 
 	def next_occurrence(self):
 		today=timezone.now()
-		today=today.replace(hour=self.hour_arrival, minute=0, second=0) # standardisation de la période
-		week_determiner=0 if self.day>today.weekday() else 7
+		today_occurrence=today.replace(hour=self.hour_departure, minute=0, second=0) # standardisation de la période
+		week_determiner=0 if today_occurrence>today else 7
 
 		# Détails : weekday() compte de 0 à 6, mais self.day de 1 à 7, donc +1
 		# si ce jour de la semaine est passée, on cherche la semaine suivante, sinon 
 		# celle-ci, donc 7 ou 0
-		return (today+timedelta(days=(-today.weekday())+self.day-1+week_determiner), self)
+		return (today_occurrence+timedelta(days=(-today_occurrence.weekday())+self.day-1+week_determiner), self)
 		
 
 	def __str__(self):
-		return self.get_day_display() + ' ' + self.period.lower()
+		return self.get_day_display() + ' ' + self.get_period_display().lower()
 
 # Personne de confiance : pas responsable légal d'un enfant, mais susceptible 
 # d'aller le chercher et devant donc être connu	du système
