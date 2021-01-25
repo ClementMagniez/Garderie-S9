@@ -76,6 +76,7 @@ class NewUserView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_user.html'
 	form_class = NewUserForm
 	success_url = '/parent/'
+	
 # Formulaire de suppression d'un parent (et de l'utilisateur associé)
 class ParentDeleteView(generic.edit.DeleteView):
 	template_name='garderie/parent_profile.html'
@@ -93,6 +94,7 @@ class ParentDeleteReliableView(generic.edit.DeleteView):
 	model = ReliablePerson
 	
 	def get_success_url(self):
-		return reverse('parent_profile', kwargs={'pk':self.request.user.id})
+		return self.request.GET.get('next', reverse('children_list')) # évite un changement de page
+
 
 
