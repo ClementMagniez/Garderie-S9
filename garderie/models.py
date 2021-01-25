@@ -98,23 +98,17 @@ class Bill(models.Model):
 	### Méthodes de manipulation du modèle
 
 	
-	# Return le coût d'un schedule 
-	def calc_amount_from_schedule(self, schedule):
-		arrival, departure=schedule.rounded_arrival_departure()
-		duration=(departure-arrival).seconds/3600
-		return round(duration*schedule.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
-	
 	# Enregistre _amount_ à partir des Schedules associés à self
 	def calc_amount(self):
 		amount=0
 		for schedule in self.schedule_set.all():
-			amount+=self.calc_amount_from_schedule(schedule)
+			amount+=schedule.calc_amount()
 		if amount==0:
 			self.delete()
 		else:
 			self.amount=amount
 			self.save()
-		
+		return amount
 		
 class Schedule(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant")
@@ -131,7 +125,7 @@ class Schedule(models.Model):
 	# Automatise l'interaction entre Schedule et Bill à l'ajout/édition du Schedule
 	# Trois cas :
 	# 1. Création du schedule : utils.get_or_create_bill lui attribue un Bill
-	# 2. Edition de schedule.departure ou schedule.arrival : on recalcule la valeur de Bill 
+	# 2. Edition de schedule.departure : on recalcule la valeur de Bill 
 	# 	 en prenant ce changement en commpte
 	# 3. Edition d'un autre champ : on ne fait rien de particulier 
 	def save(self, *args, **kwargs):
@@ -141,7 +135,7 @@ class Schedule(models.Model):
 			self.bill=bill
 		super().save()	
 		if old:
-			if old.arrival!=self.arrival or old.departure!=self.departure or not old.departure:
+			if ((old.arrival!=self.arrival or old.departure!=self.departure) or not old.departure) and self.departure:
 				self.bill.calc_amount()
 	
 	# Recalcule la facture associée après avoir supprimé self
@@ -159,7 +153,7 @@ class Schedule(models.Model):
 
 	# Renvoie True si le schedule a commencé au cours des 30 derniers jours
 	def in_past_month(self):
-		last_month=datetime.today()-timedelta(days=30)
+		last_month=timezone.now()-timedelta(days=30)
 		return self.arrival>last_month
 
 	# Renvoie un int arrival arrondi à la demi-heure inférieure
@@ -183,6 +177,9 @@ class Schedule(models.Model):
 			departure_minute=0
 			departure_hour+=1
 
+		if departure_hour==24:
+			departure_hour-=1 
+
 		# Théoriquement, hour peut alors passer à 24 (cas où le départ a lieu entre 23:30 et 0:00),
 		# forçant à incrémenter le jour, pouvant amener à incrémenter le mois, 
 		# pouvant amener à incrémenter l'année
@@ -198,6 +195,12 @@ class Schedule(models.Model):
 	# rounded_arrival_departure renverra (7:00, 8:30) 
 	def rounded_arrival_departure(self):
 		return (self.rounded_arrival(), self.rounded_departure())	
+	
+	# Return le coût d'un schedule 
+	def calc_amount(self):
+		arrival, departure=self.rounded_arrival_departure()
+		duration=(departure-arrival).seconds/3600
+		return round(duration*self.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
 	
 	
 class ExpectedPresence(models.Model):
@@ -216,7 +219,7 @@ class ExpectedPresence(models.Model):
 	
 	@property
 	def hour_departure(self):
-		return 9 if self.periode==0 else 20
+		return 9 if self.period==0 else 18
 
 	# Renvoie un tuple (datetime, self)
 	# Exemple d'utilisation : si self.day==0 (lundi) et self.period=='Soir',
@@ -224,24 +227,26 @@ class ExpectedPresence(models.Model):
 	# donc un datetime (2021, 01, 25, 18, 0,0) 
 	def next_occurrence(self):
 		today=timezone.now()
-		today=today.replace(hour=self.hour_arrival, minute=0, second=0) # standardisation de la période
-		week_determiner=0 if self.day>today.weekday() else 7
-
-		# Détails : weekday() compte de 0 à 6, mais self.day de 1 à 7, donc +1
+		today_occurrence=today.replace(hour=self.hour_departure, minute=0, second=0) # standardisation de la période
+		
+		# weekday() compte de 0 à 6, mais self.day de 1 à 7, donc +1
+		true_selfday=self.day-1
 		# si ce jour de la semaine est passée, on cherche la semaine suivante, sinon 
 		# celle-ci, donc 7 ou 0
-		return (today+timedelta(days=(-today.weekday())+self.day-1+week_determiner), self)
+		week_determiner=7 if today_occurrence.hour<=today.hour and today.weekday()>=(true_selfday) else 0
+
+		return (today_occurrence+timedelta(days=(-today_occurrence.weekday())+true_selfday+week_determiner), self)
 		
 
 	def __str__(self):
-		return self.get_day_display() + ' ' + self.period.lower()
+		return self.get_day_display() + ' ' + self.get_period_display().lower()
 
 # Personne de confiance : pas responsable légal d'un enfant, mais susceptible 
 # d'aller le chercher et devant donc être connu	du système
 # N'interagit pas directement avec le système
 class ReliablePerson(models.Model):
 	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
-	first_name=models.CharField(max_length=100, verbose_name="Préom")
+	first_name=models.CharField(max_length=100, verbose_name="Prénom")
 	last_name=models.CharField(max_length=100, verbose_name="Nom")
 	phone=models.CharField(max_length=20, null=True, verbose_name="Téléphone") 		
 

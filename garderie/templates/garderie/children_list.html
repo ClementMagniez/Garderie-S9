@@ -4,21 +4,24 @@
 
 {% load static %}
 {% block scripts %}
-<script src="{% static '/garderie/js/child_list.js/' %}"></script>
-<script>
+<script type="text/javascript">
+
+
 	var csrf="{{csrf_token}}";
 	var url_in="{% url 'ajax_arrival' %}";
 	var url_out="{% url 'ajax_departure' %}";
-	var url_edit="{% url 'ajax_edit_departure' %}";
+	var url_update_departure="{% url 'ajax_edit_departure' %}";
+	var url_update_arrival="{% url 'ajax_edit_arrival' %}";
 	var url_remove_arrival="{% url 'ajax_remove_arrival' %}";
-</script>
-
-<script type="text/javascript">
 
 	let data_tab1 = $('#table1').DataTable({
 			    		"ordering": true,
 			    		paging: false,
 			    		"order": [[ 1, "asc" ]],
+			    		"columnDefs": [
+			    			{ className: "in_arrival", "targets":[2] },
+			    			{ className: "in_departure", "targets":[3]}
+			    		],
 			    		"language": {
 						    "emptyTable": "Aucun enfant n'est présent actuellement",
 						    "search":         "Rechercher :",
@@ -52,6 +55,7 @@
 			    	});
 
 </script>
+<script src="{% static '/garderie/js/child_list.js/' %}"></script>
 
 {% endblock %}
 {% block body %}
@@ -65,25 +69,23 @@
 				<th>Enfant</th>
 				<th>Arrivée</th>
 				<th>Départ</th>
-				<th>Options</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for schedule in children_list.current_schedules %}
 				{% with child=schedule.child %}
 
-					<tr class="child_in" data-value="{{child.id}}">
+					<tr class="child_in" data-cid="{{child.id}}" data-sid="{{schedule.id}}" >
 						<td> <button class="btn btn-danger btn-sm" onclick="removeArrival({{ schedule.id }})">x</button>
 						</td>
 						<td>
 							<a href="{% url 'child_profile' child.id %}">
-									{{child.fullname}}
+									{{child.first_name}}
 							</a>
 						</td> 
-						<td class="in_arrival">
-							{{schedule.arrival |default_if_none:''|date:"G:i"}}
+						<td>
+							<input type="time"class="input_arrival" required value="{{schedule.arrival |default_if_none:''|date:"G:i"}}"></input>
 						</td>
-						<td class="in_departure"></td>
 						<td></td>
 					</tr>
 				{% endwith %}
@@ -104,7 +106,7 @@
 		</thead>
 		<tbody>
 			{% for child in children_list.all_children %}
-			<tr class="child_out" data-value="{{child.id}}" style="cursor: pointer;">
+			<tr class="child_out" data-cid="{{child.id}}" style="cursor: pointer;">
 				<td>
 					<a href="{% url 'child_profile' child.id %}">
 							{{child.fullname}}

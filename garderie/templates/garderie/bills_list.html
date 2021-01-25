@@ -10,15 +10,15 @@
 			    		paging: false,
 			    		"order": [[ 0, "asc" ]],
 			    		"language": {
-						    "emptyTable": "Aucune facture dans la base de donnée",
+						    "emptyTable": "Aucune facture dans la base de données",
 						    "search":         "Rechercher :",
-						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
-    						"infoEmpty":      "Données 0 à 0 sur 0 entrée",
+						    "info":           "Données de _START_ à _END_ sur _TOTAL_",
+    						"infoEmpty":      "Données 0 à 0 sur 0",
 
     						"infoFiltered":   "(filtré depuis _MAX_ entrées totales)",
     						"lengthMenu":     "Montre _MENU_ entrées",
 						    "loadingRecords": "Chargement...",
-						    "processing":     "Execution...",
+						    "processing":     "Exécution...",
 						    "zeroRecords":    "Aucune correspondance trouvée"
 						}
 		    		});
@@ -37,6 +37,7 @@
 			<th>Enfant</th>
 			<th>Date</th>
 			<th>Montant</th>
+			<th>Détails</th>
 		</thead>
 		{% for bill in bills_list %}
 		<tr>
@@ -52,6 +53,9 @@
 			<td>
 				{{ bill.amount | floatformat:'2'}}€
 			</td>
+			<td> 
+	<button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#factureModal{{bill.id}}">Détail</button>
+{% include 'garderie/include/admin_bills_modal.html' with bill=bill%}</td>
 		</tr>
 		{% endfor %}
 	</table>
@@ -59,4 +63,6 @@
 		<p>Connectez-vous pour voir les factures</p>
 	{% endif %}
 </div>
+
+<!-- Modal -->
 {% endblock %}

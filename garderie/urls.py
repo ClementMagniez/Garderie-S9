@@ -32,6 +32,7 @@ url_enfant=[
 url_ajax=[
         path('ajax/enter_hour_arrival/', views.AjaxChildCreateArrival, name='ajax_arrival'),
         path('ajax/enter_hour_departure/', views.AjaxChildCreateDeparture, name='ajax_departure'),
+        path('ajax/edit_hour_arrival/', views.AjaxChildEditArrival, name='ajax_edit_arrival'),
         path('ajax/edit_hour_departure/', views.AjaxChildEditDeparture, name='ajax_edit_departure'),
         path('ajax/remove_arrival/', views.AjaxChildRemoveArrival, name='ajax_remove_arrival'),
 ]
