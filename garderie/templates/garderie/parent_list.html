@@ -2,13 +2,26 @@
 
 {% block title %}Liste des parents{% endblock %}
 
+{% block scripts %}
+<script type="text/javascript">
+
+	var data_tab = $('#parent_tab').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 0, "asc" ]]
+		    		});
+
+</script>
+{% endblock %}
+
 {% block body %}
-<div class="container">
+<div class="container pt-3">
 	{% if user.is_authenticated %}
-	<table class="table table-striped">
-		<thead class="thead-light">
+	<table id="parent_tab" class="display table-bordered">
+		<thead>
 			<th>Parent</th>
-			<th colspan=2>Enfants à charge</th>
+			<th>Enfants à charge</th>
+			<th>Option</th>
 		</thead>
 		{% for parent in parent_list %}
 		<tr>
@@ -16,7 +29,7 @@
 				<td>
 				{% for child in parent.child_set.all %} 
 					{% if forloop.counter > 1 %}
-					/
+					<br>
 					{% endif %}
 					<a href="{% url 'child_profile' child.id %}">{{ child.first_name }}</a>
 				{% endfor %}
@@ -27,7 +40,7 @@
 					on doit pouvoir faire plus élégant
 				{% endcomment %}
 				<form method="POST" action="{% url 'parent_delete' parent.uid_id  %}">
-   				{% csrf_token %}<input class="btn btn-danger btn-sm" type="submit" value="DELETE">
+   				{% csrf_token %}<input class="btn btn-danger btn-sm" type="submit" value="SUPPRIMER">
 				</form>
 			</td>
 		</tr>

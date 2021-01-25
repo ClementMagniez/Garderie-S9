@@ -1,5 +1,45 @@
 {% extends 'garderie/base.html' %}
 {% block title %}Profil de {{ parent.uid.first_name }} {{parent.uid.last_name}}{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+
+	var data_tab = $('#parent_profile_enfant_tab').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 0, "asc" ]],
+			    		"searching": false,
+			    		"columnDefs": [
+						    { "width": "80%", "targets": 0 }
+						  ]
+		    		});
+
+	var data_tab_fac = $('#parent_profile_confiance_tab').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 0, "asc" ]],
+			    		"searching": false,
+			    		"columnDefs": [
+						    { "width": "80%", "targets": 0 }
+						  ]			    		
+		    		});
+
+	var data_tab_conf = $('#parent_profile_facture_tab').DataTable({
+			    		"ordering": true,
+			    		paging: false,
+			    		"order": [[ 0, "asc" ]],
+			    		"searching": false
+		    		});
+
+	$(document).ready( function () { data_tab } );
+
+	$(document).ready( function () { data_tab_fac } );
+
+	$(document).ready( function () { data_tab_conf } );
+
+</script>
+{% endblock %}
+
 {% block body %} 
 {% if user.is_authenticated and user.id == parent.uid_id or user.is_superuser %}
 <div class="d-flex justify-content-center pt-3">
@@ -15,15 +55,16 @@
 		<input type="submit" value="Valider" class="btn btn-primary">
 	</form>
 
-
 <div class="pt-3">
-	<table class="table table-striped border">
+	<h2>Enfants inscrits</h2>
+	<table id="parent_profile_enfant_tab" class="table table-striped table-bordered">
 		<thead>
 			<tr>
-				<th>Enfants inscrits</th>
-				<th> </th>
+				<th>Enfant</th>
+				<th> Options </th>
 			</tr>
 		</thead>
+		<tbody>
 	{% for child in parent.child_set.all %}
 		<tr>
 			<td>
@@ -39,14 +80,17 @@
 			</td>
 		</tr>
 	{% endfor %}
+	</tbody>
 	</table>
 </div>
 
 <div class="pt-3">
-	<table class="table table-striped border">
+	<h2>Personnes de confiance</h2>
+	<table id="parent_profile_confiance_tab" class="table table-striped table-bordered">
 		<thead>
 			<tr>
-				<th>Personnes de confiance</th>
+				<th>Personnes</th>
+				<th>Options</th>
 			</tr>
 		</thead>
 	{% for person in parent.reliableperson_set.all %}
@@ -65,28 +109,36 @@
 	</table>
 </div>
 <div class="pt-3">
-	<table class="table table-striped border">
+	<h2>Facture du mois par enfant</h2>
+	<table id="parent_profile_facture_tab" class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th>Facture du mois par enfant</th>
+				<th>Mois</th>
+				<th>Montant</th>
 			</tr>
 		</thead>
-	{% for child in parent.child_set.all %}
-		<tr>
-		{% with bill=child.last_bill %}
-		{% if bill %}
-			<td>
-					{{child.fullname}}
-			</td>
-			<td> {{bill.month|stringformat:'02d'}}/{{bill.year}}
-			</td>
-			<td>
-				{{bill.amount}}€
-			</td>
-		</tr>
-		{% endif %}
-		{% endwith %}
-	{% endfor %}
+		<tbody>
+		{% for child in parent.child_set.all %}
+			
+			{% with bill=child.last_bill %}
+			{% if bill %}
+			<tr>
+				<td>
+						{{child.fullname}}
+				</td>
+				<td>
+					{{bill.month|stringformat:'02d'}}/{{bill.year}}
+				</td>
+				<td>
+					{{bill.amount}}€
+				</td>
+			</tr>
+			{% endif %}
+			{% endwith %}
+			
+		{% endfor %}
+	</tbody>
 	</table>
 </div>
 

@@ -15,7 +15,7 @@
 	var url_update_arrival="{% url 'ajax_edit_arrival' %}";
 	var url_remove_arrival="{% url 'ajax_remove_arrival' %}";
 
-	var data_tab1 = $('#table1').DataTable({
+	let data_tab1 = $('#table1').DataTable({
 			    		"ordering": true,
 			    		paging: false,
 			    		"order": [[ 1, "asc" ]],
@@ -25,12 +25,11 @@
 			    		]
 		    		});
 
-	var data_tab2 = $('#table2').DataTable({
+	let data_tab2 = $('#table2').DataTable({
 			    		"ordering": true,
 			    		paging: false,
 			    		"order": [[ 0, "asc" ]]
 			    	});
-
 
 </script>
 
@@ -39,7 +38,7 @@
 
 <div class="container">
 	<h1>Liste des enfants présents</h1>
-	<table id="table1" class="display">
+	<table id="table1" class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th>Options</th>
@@ -71,7 +70,7 @@
 	</table>
 
 	<h1>Liste des enfants</h1>
-	<table id="table2" class="display">
+	<table id="table2" class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th>Enfant</th>
