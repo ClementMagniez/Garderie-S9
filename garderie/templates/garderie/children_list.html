@@ -4,7 +4,6 @@
 
 {% load static %}
 {% block scripts %}
-<script src="{% static '/garderie/js/child_list.js/' %}"></script>
 <script type="text/javascript">
 
 
@@ -22,16 +21,29 @@
 			    		"columnDefs": [
 			    			{ className: "in_arrival", "targets":[2] },
 			    			{ className: "in_departure", "targets":[3]}
-			    		]
+			    		],
+			    		"language": {
+						    "emptyTable": "Aucun enfant n'est présent actuellement",
+						    "search":         "Rechercher :",
+						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
+    						"infoEmpty":      "Données 0 à 0 sur 0 entrée"
+						}
 		    		});
 
 	let data_tab2 = $('#table2').DataTable({
 			    		"ordering": true,
 			    		paging: false,
-			    		"order": [[ 0, "asc" ]]
+			    		"order": [[ 0, "asc" ]],
+			    		"language": {
+						    "emptyTable": "Aucun enfant n'est enregistré",
+						    "search":         "Rechercher :",
+						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
+    						"infoEmpty":      "Données 0 à 0 sur 0 entrée"
+						}
 			    	});
 
 </script>
+<script src="{% static '/garderie/js/child_list.js/' %}"></script>
 
 {% endblock %}
 {% block body %}

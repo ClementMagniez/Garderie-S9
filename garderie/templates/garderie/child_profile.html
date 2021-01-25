@@ -11,7 +11,13 @@
 			    		"searching": false,
 			    		"columnDefs": [
 						    { "width": "10%", "targets": 0 }
-						  ]
+						  ],
+						  "language": {
+						    "emptyTable": "Aucune heure de présence n'est enregistrée",
+						    "search":         "Rechercher :",
+						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
+    						"infoEmpty":      "Données 0 à 0 sur 0 entrée"
+						}
 		    		});
 
 	var data_tab1 = $('#enfant_profile_recent_tab').DataTable({
@@ -19,6 +25,12 @@
 			    		paging: false,
 			    		"order": [[ 1, "asc" ]],
 			    		"searching": false,
+			    		"language": {
+						    "emptyTable": "Aucune heure récente n'est enregistrée",
+						    "search":         "Rechercher :",
+						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
+    						"infoEmpty":      "Données 0 à 0 sur 0 entrée"
+						}
 		    		});
 
 	$(document).ready( function () { data_tab } );
