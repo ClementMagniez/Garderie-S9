@@ -1,19 +1,33 @@
 from django.test import TestCase
-from garderie.forms import NewScheduleForm
-from garderie.models import Parent
 
+from garderie.models import *
+from django.contrib.auth.models import User
+from datetime import datetime
 
-# Vérifie les validateurs d'un Schedule
-class ScheduleFormSet(TestCase):	
+class BillTests(TestCase):
+	# Crée un parent, un HourlyRate et un enfant auxquels on peut rattacher cinq Schedules
+	def setUp(self):
+		user=User.objects.create_user(username='test',
+																		first_name='test',
+																		last_name='test',
+																		password='test',
+																		email='test@test.test')
 
-	# vérifie qu'un Schedule est bien créé
-	def test_schedule_form(self):
-		print("???")
-		# arrivée > départure
-#		arrival='2020-01-01 10:10:10'
-#		departure='2020-01-01 09:09:09'
+		parent=Parent(uid=user, phone="16518612")
+		parent.save()
+		child=Child(parent=parent, first_name="foo", last_name="bar")
+		child.save()
+		h=HourlyRate(value=10, date_start=datetime.strptime('2020-01-01 01:00:00', "%Y-%m-%d %H:%M:%S"))
+		h.save()
 
-#		form=NewScheduleForm(data={'arrival':arrival, 'departure':departure})
-#		form.clean()
-#		print(form.errors)
-#		self.assertEquals(forms.errors, None)
+		self.b=Bill(child=child, month=1, year=2020)
+		self.b.save()
+	
+		Schedule(child=child, bill=self.b, rate=h, arrival=datetime.strptime('2020-01-01 11:00:00', "%Y-%m-%d %H:%M:%S"), departure=datetime.strptime('2020-01-01 11:30:00', "%Y-%m-%d %H:%M:%S")).save()
+		Schedule(child=child, bill=self.b, rate=h, arrival=datetime.strptime('2020-01-02 08:00:00', "%Y-%m-%d %H:%M:%S"), departure=datetime.strptime('2020-01-02 9:30:00', "%Y-%m-%d %H:%M:%S")).save()
+		
+	def testCalcAmount(self):
+		self.assertEqual(len(self.b.schedule_set.all()), 2)
+		self.b.calc_amount()
+		self.assertEqual(self.b.amount, 20)
+	

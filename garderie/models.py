@@ -159,7 +159,7 @@ class Schedule(models.Model):
 
 	# Renvoie True si le schedule a commencé au cours des 30 derniers jours
 	def in_past_month(self):
-		last_month=datetime.today()-timedelta(days=30)
+		last_month=timezone.now()-timedelta(days=30)
 		return self.arrival>last_month
 
 	# Renvoie un int arrival arrondi à la demi-heure inférieure
