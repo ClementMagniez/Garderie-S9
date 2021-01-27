@@ -74,7 +74,7 @@ class Child(models.Model):
 
 
 class HourlyRate(models.Model):
-	value=models.FloatField(verbose_name="Taux à la demi-heure")
+	value=models.FloatField(verbose_name="Taux à la demi-heure (en €)")
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin", null=True)
 		
@@ -117,14 +117,6 @@ class Schedule(models.Model):
 			self.bill=bill
 		super().save()	
 
-
-	# Recalcule la facture associée après avoir supprimé self
-	# TODO : décider si on supprime un Bill à 0€ ou pas
-#	def delete(self, *args, **kwargs):
-#		bill=self.bill
-#		super().delete()
-#		self.bill.calc_amount()
-	
 	### Méthodes de manipulation du modèle
 	
 	# Renvoie True si le schedule n'a pas encore de départ, False sinon
@@ -173,8 +165,10 @@ class Schedule(models.Model):
 	
 	# Return le coût d'un schedule 
 	def calc_amount(self):
+		if not self.departure:
+			return 0
 		arrival, departure=self.rounded_arrival_departure()
-		duration=(departure-arrival).seconds/1800 # calcul à la demi-heure
+		duration=(departure-arrival).seconds/1800 # calcul à la demi-heure	
 		return round(duration*self.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
 	
 	
@@ -220,7 +214,7 @@ class ExpectedPresence(models.Model):
 # d'aller le chercher et devant donc être connu	du système
 # N'interagit pas directement avec le système
 class ReliablePerson(models.Model):
-	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
+	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name='Enfant concerné')
 	first_name=models.CharField(max_length=100, verbose_name="Prénom")
 	last_name=models.CharField(max_length=100, verbose_name="Nom")
 	phone=models.CharField(max_length=20, null=True, verbose_name="Téléphone") 		

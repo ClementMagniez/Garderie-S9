@@ -10,16 +10,6 @@ from ..utils import is_parent_permitted
 # Contient les views concernant les parents 
 
 
-# Liste des parents, fournit au HTML tous les Parent
-class ParentListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
-	template_name="garderie/parent_list.html"
-	context_object_name='parent_list'
-
-	def test_func(self):
-		return is_parent_permitted(self)
-	def get_queryset(self):
-		return Parent.objects.all()
-
 # Profil d'un parent donné
 class ParentProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
 	model=Parent

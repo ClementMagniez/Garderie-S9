@@ -5,11 +5,11 @@ from . import views
 url_admin=[
         path('admin/tauxhoraire/',  permission_required('is_superuser')(views.NewHourlyRateView.as_view()), name='hourly_rate_form'),
         path('admin/factures',  permission_required('is_superuser')(views.BillsListView.as_view()), name='bills_list'),
+        path('parent/', permission_required('is_superuser')(views.ParentListView.as_view()), name='parent_list'),
 
 ]
 url_parent=[
         path('parent-redirect/', views.ParentRedirectView.as_view(), name='parent_index'),
-        path('parent/', permission_required('is_superuser')(views.ParentListView.as_view()), name='parent_list'),
         path('parent/add/', views.NewUserView.as_view(), name='add_parent'),
         path('parent/<int:pk>/', views.ParentProfileView.as_view(), name='parent_profile'),
         path('parent/<int:pk>/create_child/', views.ParentCreateChildView.as_view(), name='parent_create_child'),

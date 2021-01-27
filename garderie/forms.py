@@ -96,11 +96,12 @@ class NewChildFormAdmin(forms.ModelForm):
 class NewReliableForm(forms.ModelForm):
 	class Meta:
 		model = ReliablePerson
-		fields = [ 'first_name', 'last_name']
+		fields = [ 'child', 'first_name', 'last_name']
 		
 	def __init__(self, *args, **kwargs):
 		self.request=kwargs.pop('request')
 		super().__init__(*args, **kwargs)
+		self.fields['child'].queryset=Child.objects.filter(parent=self.request.user.id)
 		
 		
 	def save(self, commit=True):

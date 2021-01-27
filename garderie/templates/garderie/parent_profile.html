@@ -107,22 +107,25 @@
 	<table id="parent_profile_confiance_tab" class="table table-striped table-bordered">
 		<thead>
 			<tr>
-				<th>Personnes</th>
+				<th>Enfant</th>
+				<th>Personne</th>
 				<th>Options</th>
 			</tr>
 		</thead>
-	{% for person in parent.reliableperson_set.all %}
-		<tr>
-			<td>
-					{{person.fullname}}
-			</td>
-			<td>
-				<form method="POST" action="{% url 'reliable_person_delete' person.id %}?next={{request.path}}">
-	 				{% csrf_token %}
-	 				<input type="submit" value="X" class="btn btn-danger btn-sm">
-				</form>
-			</td>
-		</tr>
+		
+	{% for child in parent.child_set.all %}
+		{% for person in child.reliableperson_set.all %}
+			<tr>
+				<td>{{child.first_name}}</td>
+				<td>{{person.fullname}}</td>
+				<td>
+					<form method="POST" action="{% url 'reliable_person_delete' person.id %}?next={{request.path}}">
+		 				{% csrf_token %}
+		 				<input type="submit" value="X" class="btn btn-danger btn-sm">
+					</form>
+				</td>
+			</tr>
+		{% endfor %}
 	{% endfor %}
 	</table>
 </div>
