@@ -7,7 +7,27 @@ from django.core.mail import send_mail
 import random
 import string
 
-# Recense les fonctions utilitaires utilisées par d'autres fichiers de l'app
+from django.http import JsonResponse
+from django.views.generic.edit import CreateView
+
+### Recense les fonctions et classes utilitaires utilisées par d'autres fichiers de l'app
+
+# Classe générique pour les formulaires intégrés à une autre view : retournent leurs erreurs
+# sous forme JSon et retiennent la pk de la view principale
+class EmbeddedCreateView(CreateView):
+	template_name='garderie/forms/base_form.html' # inutile en pratique, embedded_form.js intercepte
+
+	def get_form_kwargs(self):
+		kwargs=super().get_form_kwargs()
+		kwargs['pk']=self.kwargs['pk']
+		return kwargs
+		
+	def form_invalid(self, form):
+		return JsonResponse(form.errors)
+	
+	def form_valid(self, form):
+		self.object=form.save()
+		return JsonResponse({})
 
 
 

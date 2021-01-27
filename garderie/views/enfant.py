@@ -2,6 +2,8 @@ from django.views import generic
 from ..models import Child, Schedule, Parent, ExpectedPresence
 from ..forms import NewPresenceForm, ChildUpdateForm, NewChildFormAdmin
 from django.urls import reverse, reverse_lazy
+from django.http import JsonResponse
+from ..utils import EmbeddedCreateView
 
 # Contient toutes les views manipulant principalement les Children
 
@@ -34,15 +36,8 @@ class ChildProfileView(generic.DetailView):
 		return context
 	
 # Formulaire de création d'un schedule
-class CreatePresenceView(generic.edit.CreateView):
-	template_name='garderie/forms/base_form.html' # inutile en pratique, embedded_form.js intercepte
+class CreatePresenceView(EmbeddedCreateView):
 	form_class=NewPresenceForm
-	
-	def get_form_kwargs(self):
-		kwargs=super().get_form_kwargs()
-		kwargs['pk']=self.kwargs['pk']
-		return kwargs
-	
 	def get_success_url(self):
 		return reverse('child_profile', args=[self.kwargs['pk']])
 	

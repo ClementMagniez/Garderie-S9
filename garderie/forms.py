@@ -195,19 +195,12 @@ class NewPresenceForm(forms.ModelForm):
 		self.child=Child.objects.get(pk=kwargs.pop('pk'))
 		super().__init__(*args, **kwargs)
 
-	def save(self, commit=True):
-		presence=super().save(commit=False)
-		if commit:
-			presence.child=self.child
-			presence.save()
-		return presence
-
-	# On valide que le nouvel horaire n'overlap pas un ancien
+	# Valide que le nouvel horaire n'overlap pas un ancien
 	def clean(self):
 		cleaned_data = super().clean()
 		new_day=cleaned_data.get('day')
 		new_period=cleaned_data.get('period')
-				
+		print("t-----------------------est")
 		all_presences_child=ExpectedPresence.objects.filter(child_id=self.child.id)
 		for presence in all_presences_child:
 		
@@ -215,6 +208,16 @@ class NewPresenceForm(forms.ModelForm):
 				raise ValidationError("Le créneau voulu en chevauche un autre déjà existant.")
 		return self.cleaned_data
 			
+	def save(self, commit=True):
+		print("-----------------------test")
+		presence=super().save(commit=False)
+		if commit:
+			presence.child=self.child
+			presence.save()
+		return presence
+
+
+
 
 class NewHourlyRateForm(forms.ModelForm):
 	class Meta:

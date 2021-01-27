@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from ..utils import is_parent_permitted
+from ..utils import is_parent_permitted, EmbeddedCreateView
 
 # Contient les views concernant les parents 
 
@@ -49,34 +49,22 @@ class ParentUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.Upd
 		return reverse('parent_profile', args=[self.request.user.id])
 
 # Formulaire de création d'une personne de confiance (susceptible d'être récupérée par le parent)
-class CreateReliableView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.CreateView):
-	template_name='garderie/forms/base_form.html'
+class CreateReliableView(LoginRequiredMixin, UserPassesTestMixin, EmbeddedCreateView):
 	form_class=NewReliableForm
 	
 	def test_func(self):
 		return is_parent_permitted(self)
 		
-	def get_form_kwargs(self):
-		kwargs=super().get_form_kwargs()
-		kwargs['pk']=self.kwargs['pk']
-		return kwargs			
-
 	def get_success_url(self):
 		return reverse('parent_profile', args=[self.kwargs['pk']])
 
 # Formulaire de création d'un enfant par le parent
-class ParentCreateChildView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.CreateView):
-	template_name='garderie/forms/base_form.html'
+class ParentCreateChildView(LoginRequiredMixin, UserPassesTestMixin, EmbeddedCreateView):
 	form_class=NewChildFormParent
 	
 	def test_func(self):
 		return is_parent_permitted(self)
 		
-	def get_form_kwargs(self):
-		kwargs=super().get_form_kwargs()
-		kwargs['pk']=self.kwargs['pk']
-		return kwargs
-			
 	def get_success_url(self):
 		return reverse('parent_profile', args=[self.kwargs['pk']])
 			

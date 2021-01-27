@@ -18,14 +18,15 @@ $(document).ready(function () {
 			url: url,
 			data: $(this).serialize(),
 			success: function(data) {
-				let parser = new DOMParser();
-				doc = parser.parseFromString(data, "text/html");
-				let remainder = $(doc).find(".errorlist");
-				if (remainder[0]) {
+				console.log(data);
+
+
+				if (data['__all__']) {
 					form.find('.embedded_error').remove();
-					form.find('table').prepend('<tr class="embedded_error"><td colspan="2"><ul class="errorlist nonfield">'+remainder[0].innerHTML+'</ul></td></tr>');
+					for(error in data['__all__'])
+						form.find('table').prepend('<tr class="embedded_error"><td colspan="2"><ul>'+data['__all__']+'</ul></td></tr>');
 				}
-					else { location.reload(); }
+					else { location.reload(); } 
 			},
 			error: function(xhr, ajaxOptions, thrownError) {
 				console.log(xhr);
