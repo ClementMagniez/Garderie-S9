@@ -74,7 +74,7 @@ class Child(models.Model):
 
 
 class HourlyRate(models.Model):
-	value=models.FloatField(verbose_name="Taux horaire")
+	value=models.FloatField(verbose_name="Taux à la demi-heure")
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin", null=True)
 		
@@ -174,7 +174,7 @@ class Schedule(models.Model):
 	# Return le coût d'un schedule 
 	def calc_amount(self):
 		arrival, departure=self.rounded_arrival_departure()
-		duration=(departure-arrival).seconds/3600
+		duration=(departure-arrival).seconds/1800 # calcul à la demi-heure
 		return round(duration*self.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
 	
 	
