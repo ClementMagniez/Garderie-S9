@@ -23,3 +23,6 @@ def get_datetime_from_hhmm(hhmm):
 	new_hhmm=hhmm.split(':')
 	return timezone.now().replace(hour=int(new_hhmm[0]), minute=int(new_hhmm[1]))
 	
+
+def is_parent_permitted(view):
+		return view.request.user.id==view.kwargs['pk'] or view.request.user.is_superuser
