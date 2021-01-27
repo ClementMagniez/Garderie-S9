@@ -35,17 +35,14 @@ class ChildProfileView(generic.DetailView):
 	
 # Formulaire de création d'un schedule
 class CreatePresenceView(generic.edit.CreateView):
+	template_name='garderie/forms/base_form.html' # inutile en pratique, embedded_form.js intercepte
 	form_class=NewPresenceForm
+	
 	def get_form_kwargs(self):
 		kwargs=super().get_form_kwargs()
 		kwargs['pk']=self.kwargs['pk']
 		return kwargs
 	
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['action']=reverse('schedule_register', kwargs={'pk':self.kwargs['pk']}) # TODO même URL donc sûrement améliorable
-		return context
-			
 	def get_success_url(self):
 		return reverse('child_profile', args=[self.kwargs['pk']])
 	

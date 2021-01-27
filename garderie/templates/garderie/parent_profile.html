@@ -49,11 +49,6 @@
 						}
 		    		});
 
-	$(document).ready( function () { data_tab } );
-
-	$(document).ready( function () { data_tab_fac } );
-
-	$(document).ready( function () { data_tab_conf } );
 
 </script>
 {% endblock %}
@@ -83,7 +78,7 @@
 			</tr>
 		</thead>
 		<tbody>
-	{% for child in parent.child_set.all %}
+	{% for child in parent.all_children %}
 		<tr>
 			<td>
 				<a href={% url 'child_profile' child.id %}>
@@ -113,7 +108,7 @@
 			</tr>
 		</thead>
 		
-	{% for child in parent.child_set.all %}
+	{% for child in parent.all_children %}
 		{% for person in child.reliableperson_set.all %}
 			<tr>
 				<td>{{child.first_name}}</td>
@@ -140,7 +135,7 @@
 			</tr>
 		</thead>
 		<tbody>
-		{% for child in parent.child_set.all %}
+		{% for child in parent.all_children %}
 			
 			{% with bill=child.last_bill %}
 			{% if bill %}
@@ -161,7 +156,6 @@
 		{% endfor %}
 	</tbody>
 	</table>
-
 	<button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#factureModal">Détail</button>
 
 </div>
@@ -169,26 +163,12 @@
 	{% if user.id == parent.uid_id %}
 		<div class="pt-3">
 			<h3>Inscrire un enfant</h3>
-			<form action="{% url 'parent_create_child' parent.uid_id  %}" method="post">
-				{% csrf_token %}
-				<table>
-				{{ new_child_form.as_table }}
-				</table>
-
-				<input type="submit" value="Valider" class="btn btn-primary">
-			</form>
+			{% include 'garderie/forms/embedded_form.html' with action=new_child_action form=new_child_form %}
 		</div>
 			
 		<div class="pt-3">
 			<h3>Ajouter une personne de confiance</h3>
-			<form action="{% url 'parent_create_reliable' parent.uid_id  %}" method="post">
-				{% csrf_token %}
-				<table>
-				{{ new_reliable_form.as_table }}
-				</table>
-
-				<input type="submit" value="Valider" class="btn btn-primary">
-			</form>
+			{% include 'garderie/forms/embedded_form.html' with action=new_reliable_action form=new_reliable_form %}
 		</div>
 	{% endif %}
 {% endif %}

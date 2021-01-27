@@ -17,6 +17,8 @@ class ScheduleManager(models.Manager):
 	def recent_schedules(self):
 		return super().get_queryset().filter(arrival__gte=datetime.today()-timedelta(days=30))
 
+
+
 ### Modèles
 
 class Parent(models.Model):
@@ -26,14 +28,21 @@ class Parent(models.Model):
 
 	def __str__(self):
 		return self.uid.first_name+" "+self.uid.last_name
-		
+			
 	def fullname(self):
 		return str(self)			
 
+
+	# Queryset fusionnant child_set et child_set2 TODO les fusionner automatiquement ?
+	def all_children(self):
+		return self.child_set.all() | self.child_set2.all()
+
 class Child(models.Model):
-	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
-	first_name=models.CharField(max_length=100, null=True, verbose_name="Prénom")
-	last_name=models.CharField(max_length=100, null=True, verbose_name="Nom")
+	parent=models.ForeignKey(Parent, on_delete=models.DO_NOTHING, related_name='child_set')
+	first_name=models.CharField(max_length=100, verbose_name="Prénom")
+	last_name=models.CharField(max_length=100, verbose_name="Nom")
+	second_parent=models.ForeignKey(Parent, on_delete=models.DO_NOTHING, related_name='child_set2', null=True)
+
 
 	def __str__(self):
 		return self.first_name+" "+self.last_name
@@ -71,6 +80,10 @@ class Child(models.Model):
 		else:
 			return None
 	
+	def parents(self):
+		second_parent_uid=self.second_parent.uid if self.second_parent else None
+		
+		return (self.parent.uid, second_parent_uid)	
 
 
 class HourlyRate(models.Model):

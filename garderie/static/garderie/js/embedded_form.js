@@ -6,16 +6,12 @@
 */
 $(document).ready(function () {
 
-	console.log("jquery up");
 	$('.embedded_form').on('submit', function(event) {
-
-		console.log("event registered");
+		let form=$(this);		
 		event.preventDefault();
-
+		event.stopImmediatePropagation();
 		let url = $(this).attr('action') || action;
 		
-		console.log($(this).serialize());
-
 		$.ajax({
 			type: $(this).attr('method'),
 			
@@ -25,15 +21,14 @@ $(document).ready(function () {
 				let parser = new DOMParser();
 				doc = parser.parseFromString(data, "text/html");
 				let remainder = $(doc).find(".errorlist");
-				console.log(remainder);
-	
 				if (remainder[0]) {
-					$('.embedded_error').remove();
-					$('.embedded_form table').prepend('<tr class="embedded_error"><td colspan="2"><ul class="errorlist nonfield">'+remainder[0].innerHTML+'</ul></td></tr>');
+					form.find('.embedded_error').remove();
+					form.find('table').prepend('<tr class="embedded_error"><td colspan="2"><ul class="errorlist nonfield">'+remainder[0].innerHTML+'</ul></td></tr>');
 				}
-				else { location.reload(); }
+					else { location.reload(); }
 			},
 			error: function(xhr, ajaxOptions, thrownError) {
+				console.log(xhr);
 				console.log('SERVER ERROR: ' + thrownError);
 			},
 			

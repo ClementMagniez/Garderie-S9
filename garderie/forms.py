@@ -1,15 +1,11 @@
 from django import forms
-from django.core.mail import send_mail
 from .models import Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence
 from django.contrib.auth.models import User
 from django.template import Context
-from django.template.loader import get_template
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
-
-import random
-import string
+from .utils import create_parent_and_send_mail
 
 # Formulaire de création d'un Parent
 # Sémantiqueemnt, on abuse un peu de ModelForm ici puisqu'on utilise un seul
@@ -19,7 +15,6 @@ class NewUserForm(forms.ModelForm):
 	mail=forms.CharField(label="Adresse mail")
 	first_name=forms.CharField(label="Prénom")
 	last_name=forms.CharField(label="Nom")
-	phone=forms.CharField(label="Téléphone")
 
 	class Meta:
 		model = Parent
@@ -31,28 +26,10 @@ class NewUserForm(forms.ModelForm):
 	def save(self, commit=True):
 		new_parent = super().save(commit=False)
 		if commit:
-		
-			if settings.DEBUG:
-				random_username='test'
-				random_password='test'
-			else:
-				random_username=''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(6))
-				random_password= User.objects.make_random_password()			
-
-			user=User.objects.create_user(username=random_username,
-																		first_name=self.data.get('first_name'),
-																		last_name=self.data.get('last_name'),
-																		password=random_password,
-																		email=self.data.get('mail'))
-			user.save()
-			new_parent.uid_id=user.id
-			new_parent.save()
-			
-			raw_data=get_template('garderie/email_welcome.txt')
-			data_context=({'id':random_username, 'pw':random_password})
-			text_data=raw_data.render(data_context)
-			
-			send_mail("Bienvenue sur Garderie++", text_data, 'a@b.com', [user.email])
+			create_parent_and_send_mail(new_parent, 
+																	self.data.get('first_name'),
+																	self.data.get('last_name'), 
+																	self.data.get('mail'))
 		return new_parent
 		
 # Formulaire de modification d'un parent 
@@ -87,50 +64,119 @@ class ParentUpdateForm(forms.ModelForm):
 
 # Formulaire de création d'un enfant par un admin
 class NewChildFormAdmin(forms.ModelForm):
+	second_parent_mail=forms.CharField(label="Mail du deuxième parent (facultatif)", required=False)
+	
 	class Meta:
 		model = Child
 		fields = [ 'parent', 'first_name', 'last_name']
 
+	# Valide que les deux parents diffèrent
+	def clean(self):
+		cleaned_data = super().clean()
+		parent=cleaned_data.get('parent')
+		second_mail=cleaned_data.get('second_parent_mail')
+	
+		if (parent.uid.email==second_mail):
+				raise ValidationError("Les deux parents sont la même personne !")
+		return self.cleaned_data
 
-# Formulaire de création d'une personne de confiance par un parent
-class NewReliableForm(forms.ModelForm):
-	class Meta:
-		model = ReliablePerson
-		fields = [ 'child', 'first_name', 'last_name']
-		
-	def __init__(self, *args, **kwargs):
-		self.request=kwargs.pop('request')
-		super().__init__(*args, **kwargs)
-		self.fields['child'].queryset=Child.objects.filter(parent=self.request.user.id)
-		
-		
+
 	def save(self, commit=True):
-		person=super().save(commit=False)
+		new_child=super().save(commit=False)
 		if commit:
-			person.parent_id=self.request.user.id
-			person.save()
-		return person
-				
+			second_mail=self.data.get('second_parent_mail')
+			if second_mail:
+				try:
+					second_parent=User.objects.get(email=second_mail)
+					second_parent=Parent.objects.get(pk=second_parent.id)
+				except User.DoesNotExist:
+					second_parent=Parent()
+					create_parent_and_send_mail(second_parent, '', '', second_mail)		
+					second_parent.save()
+				new_child.second_parent=second_parent
+			
+			new_child.save()
+		return new_child
+						
 		
 # Formulaire de création d'un enfant par son parent 
 # Par rapport à NewChildFormAdmin, masque le champ "parent"
 # et le remplit automatiquement via l'utilisateur connecté
 class NewChildFormParent(forms.ModelForm):
+	second_parent_mail=forms.CharField(label="Mail du deuxième parent (facultatif)", required=False)
 	class Meta:
 		model = Child
-		fields = ['first_name', 'last_name']
+		fields = [ 'first_name', 'last_name']
 
 	def __init__(self, *args, **kwargs):
-		self.request=kwargs.pop('request')
+		self.pid=kwargs.pop('pk')
 		super().__init__(*args, **kwargs)
 
-	def save(self, commit=True):
-		child=super().save(commit=False)
-		if commit:
-			child.parent_id=self.request.user.id
-			child.save()
-		return child
+	# Valide que les deux parents diffèrent
+	def clean(self):
+		cleaned_data = super().clean()
+		parent=Parent.objects.get(uid=self.pid)
+		second_mail=cleaned_data.get('second_parent_mail')
 	
+		if (parent.uid.email==second_mail):
+				raise ValidationError("Les deux parents sont la même personne !")
+		return self.cleaned_data
+
+	def save(self, commit=True):
+		print("debut save")
+		new_child=super().save(commit=False)
+		if commit:
+			print("debut commit")
+			second_mail=self.data.get('second_parent_mail')
+			if second_mail:
+				try:
+					second_parent=User.objects.get(email=second_mail)
+					second_parent=Parent.objects.get(pk=second_parent.id)
+				except User.DoesNotExist:
+					second_parent=Parent()
+					create_parent_and_send_mail(second_parent, '', '', second_mail)		
+					second_parent.save()
+
+				new_child.second_parent=second_parent
+			new_child.parent_id=self.pid
+			new_child.save()
+			print("fin commit")
+		print("avant return")
+		return new_child	
+
+		
+		
+# Formulaire de création d'une personne de confiance par un parent
+class NewReliableForm(forms.ModelForm):
+	class Meta:
+		model = ReliablePerson
+		fields = [ 'child','first_name', 'last_name']
+		
+	def __init__(self, *args, **kwargs):
+		self.pid=kwargs.pop('pk')
+		super().__init__(*args, **kwargs)
+		parent=Parent.objects.get(uid=self.pid)
+		self.fields['child'].queryset=parent.all_children()
+
+		
+	# Valide que la personne n'est pas déjà présente'
+	def clean(self):
+		cleaned_data = super().clean()
+		child=cleaned_data.get('child')
+		first_name=cleaned_data.get('first_name')
+		last_name=cleaned_data.get('last_name')
+	
+		res=child.reliableperson_set.filter(first_name=first_name, last_name=last_name)
+		if len(res)>0:
+				raise ValidationError("Une personne du même nom est déjà inscrite pour cet enfant.")
+		return self.cleaned_data
+
+	def save(self, commit=True):
+		person=super().save(commit=False)
+		if commit:
+			person.parent_id=self.pid
+			person.save()
+		return person
 
 # Met à jour un enfant
 class ChildUpdateForm(forms.ModelForm):
@@ -141,7 +187,6 @@ class ChildUpdateForm(forms.ModelForm):
 
 # Formulaire de création d'un ExpectedPresence pour un enfant donné
 class NewPresenceForm(forms.ModelForm):
-
 	class Meta:
 		model = ExpectedPresence
 		fields = ['day', 'period']
@@ -166,7 +211,7 @@ class NewPresenceForm(forms.ModelForm):
 		all_presences_child=ExpectedPresence.objects.filter(child_id=self.child.id)
 		for presence in all_presences_child:
 		
-			if (presence.day==new_day and presence.period ==	new_period):
+			if (presence.day==new_day and presence.period == new_period):
 				raise ValidationError("Le créneau voulu en chevauche un autre déjà existant.")
 		return self.cleaned_data
 			

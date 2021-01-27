@@ -1,5 +1,5 @@
 from django.views import generic
-from ..forms import NewHourlyRateForm
+from ..forms import NewHourlyRateForm, NewUserForm
 from ..models import Bill, HourlyRate, Parent
 from django.urls import reverse_lazy
 
@@ -28,6 +28,12 @@ class ParentListView(generic.ListView):
 	def get_queryset(self):
 		return Parent.objects.all()
 
+# Formulaire de création d'un nouveau parent
+class NewUserView(generic.edit.CreateView):
+	template_name = 'garderie/forms/new_user.html'
+	form_class = NewUserForm
+	success_url = '/parent/'
+	
 
 
 # Liste des factures par ordre de date décroissante, fournit au HTML tous les Bills
