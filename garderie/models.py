@@ -69,6 +69,8 @@ class Child(models.Model):
 			
 		return bills[0] if bills else None
 
+
+	# Renvoie un tuple (datetime, ExpectedPresence) décrivant l'ExpectedPresence la plus proche
 	def next_presence(self):
 		all_occurrences=[presence.next_occurrence() for presence in self.expectedpresence_set.all()]
 		# compare des tuples : on sait cependant que le premier item du tuple (un datetime)
@@ -80,6 +82,36 @@ class Child(models.Model):
 		else:
 			return None
 	
+	# Renvoie true si l'enfant sera présent dans le créneau matin/soir suivant
+	def present_next_time(self):
+		next=self.next_presence()
+		today=timezone.now()
+		if next:
+			return next[0].day==today.day and next[1].hour_arrival<today.hour and next[1].hour_departure>today.hour
+		else:
+			return False
+	# Renvoie true si l'enfant a été présent (puis est parti) dans le créneau courant	
+
+	# Check si l'enfant est parti il y a moins de 3h
+	def was_here(self):
+		today=timezone.now()
+		for schedule in self.schedule_set.all():
+			if schedule.departure+timedelta(hours=3)>today:
+				return True
+		return False
+		
+	# Return un Schedule incomplet selon incomplete_schedule ; s'il n'y en a pas mais was_here est True,
+	# return le dernier Schedule complet ; si was_here est False, return None
+	def schedule_to_display(self):
+		res=self.incomplete_schedule()
+		if not res:
+			if self.was_here():
+				return self.schedule_set.all().latest('id')
+			return None
+		return res
+		
+		
+		
 	def parents(self):
 		second_parent_uid=self.second_parent.uid if self.second_parent else None
 		
@@ -197,11 +229,11 @@ class ExpectedPresence(models.Model):
 	# une heure de départ et d'arrive selon self.period
 	@property
 	def hour_arrival(self):
-		return 7 if self.period==0 else 16
+		return 0 if self.period==0 else 12
 	
 	@property
 	def hour_departure(self):
-		return 9 if self.period==0 else 18
+		return 12 if self.period==0 else 20
 
 	# Renvoie un tuple (datetime, self)
 	# Exemple d'utilisation : si self.day==0 (lundi) et self.period=='Soir',
@@ -215,8 +247,7 @@ class ExpectedPresence(models.Model):
 		true_selfday=self.day-1
 		# si ce jour de la semaine est passée, on cherche la semaine suivante, sinon 
 		# celle-ci, donc 7 ou 0
-		week_determiner=7 if today_occurrence.hour<=today.hour and today.weekday()>=(true_selfday) else 0
-
+		week_determiner=7 if (today_occurrence.hour<=today.hour and today.weekday()==true_selfday) or today.weekday()>true_selfday else 0
 		return (today_occurrence+timedelta(days=(-today_occurrence.weekday())+true_selfday+week_determiner), self)
 		
 

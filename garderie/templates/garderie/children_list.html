@@ -25,8 +25,8 @@
 			    		"language": {
 						    "emptyTable": "Aucun enfant n'est présent actuellement",
 						    "search":         "Rechercher :",
-						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
-    						"infoEmpty":      "Données 0 à 0 sur 0 entrée",
+						    "info":           "Données _START_ à _END_ sur _TOTAL_ entrées",
+    						"infoEmpty":      "Pas encore de données",
 
     						"infoFiltered":   "(filtré depuis _MAX_ entrées totales)",
     						"lengthMenu":     "Montre _MENU_ entrées",
@@ -43,8 +43,8 @@
 			    		"language": {
 						    "emptyTable": "Aucun enfant n'est enregistré",
 						    "search":         "Rechercher :",
-						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
-    						"infoEmpty":      "Données 0 à 0 sur 0 entrée",
+						    "info":           "Données _START_ à _END_ sur _TOTAL_ entrées",
+    						"infoEmpty":      "Pas encore de données",
 
     						"infoFiltered":   "(filtré depuis _MAX_ entrées totales)",
     						"lengthMenu":     "Montre _MENU_ entrées",
@@ -72,33 +72,48 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for schedule in children_list.current_schedules %}
-				{% with child=schedule.child %}
-
-					<tr class="child_in" data-cid="{{child.id}}" data-sid="{{schedule.id}}" >
-						<td> <button class="btn btn-danger btn-sm" onclick="removeArrival({{ schedule.id }})">x</button>
-						</td>
-						<td>
-							<a href="{% url 'child_profile' child.id %}">
-									{{child.first_name}}
-							</a>
-						</td> 
-						<td>
-							<input type="time"class="input_arrival" required value="{{schedule.arrival |default_if_none:''|date:"G:i"}}"></input>
-						</td>
-						<td></td>
-					</tr>
+		{% for child in children_list.all_children %}
+			{% if child.present_next_time or child.incomplete_schedule or child.was_here %}
+				{% with schedule=child.schedule_to_display %}
+				<tr class="child_in" data-cid="{{child.id}}" data-sid="{{schedule.id}}" >
+					<td> {% if schedule %}
+						<button class="btn btn-danger btn-sm" onclick="removeArrival({{ schedule.id }})">x</button>
+							{% endif %}
+					</td>
+					<td>
+						<a href="{% url 'child_profile' child.id %}">
+								{{child.first_name}}
+						</a>
+					</td> 
+					<td> {% if schedule %}
+						<input type="time"class="input_arrival" required value="{{schedule.arrival |default_if_none:''|date:"G:i"}}"></input>
+							{% else %}
+								<button class="button_in_arrival">Arrivée</button>
+							
+							{% endif %}
+							
+					</td>
+					<td> {% if schedule and schedule.departure %}
+						<input type="time"class="input_departure" required value="{{schedule.departure |default_if_none:''|date:"G:i"}}"></input>
+							{% elif schedule and schedule.arrival %}
+								<button class="button_in_departure">Départ</button>
+							
+							{% endif %}
+					</td>
+				</tr>
 				{% endwith %}
-			{% endfor %}
+			{% endif %}
+		{% endfor %}
 		</tbody>
 	</table>
+
 
 	<h1>Liste des enfants</h1>
 	<table id="table2" class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th>Enfant</th>
-				<th>Prochain horaire de présence</th>
+				<th></th>
 				{% if user.is_superuser %}
 					<th>Options</th>
 				{% endif %}
@@ -106,19 +121,14 @@
 		</thead>
 		<tbody>
 			{% for child in children_list.all_children %}
-			<tr class="child_out" data-cid="{{child.id}}" style="cursor: pointer;">
+			<tr class="child_out" data-cid="{{child.id}}">
 				<td>
 					<a href="{% url 'child_profile' child.id %}">
 							{{child.fullname}}
 					</a>
 				</td> 
 				<td>
-					{% with presence=child.next_presence %}
-						{{ presence.0|date:'l d/m'|default_if_none:''}}
-						{% if presence.1 %}
-							{{ presence.1.get_period_display|lower }}
-						{% endif %}
-					{% endwith %}
+					<button type="button" class="button_out_arrival">Arrivée</button>
 				</td>				
 				{% if user.is_superuser %}
 					<td> 

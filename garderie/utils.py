@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 
 from django.template.loader import get_template
 from django.core.mail import send_mail
+
+from datetime import datetime
 import random
 import string
 
@@ -47,7 +49,7 @@ def get_or_create_bill(schedule):
 # du jour, avec l'heure et la minute remplacées par le paramètre
 def get_datetime_from_hhmm(hhmm):
 	new_hhmm=hhmm.split(':')
-	return timezone.now().replace(hour=int(new_hhmm[0]), minute=int(new_hhmm[1]))
+	return timezone.make_aware(datetime.today().replace(hour=int(new_hhmm[0]), minute=int(new_hhmm[1])))
 	
 	
 	

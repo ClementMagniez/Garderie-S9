@@ -18,17 +18,17 @@ def AjaxChildCreateArrival(request):
 		if child.incomplete_schedule()!=None: # un schedule en cours 
 			return JsonResponse({'error': "L'enfant est déjà présent."})
 	except Schedule.DoesNotExist:
-		print(f'DoesNotExist raised sur {child}')
-		# TODO mais du coup, on renvoie quoi ?
+		pass # résultat attendu, pas un problème 
 		
 	schedule=Schedule()
 	schedule.arrival=timezone.localtime()
+	print(timezone.localtime())
 	schedule.child=child
 	schedule.rate=HourlyRate.objects.latest('id')
 	schedule.save()
 
 	data = {
-	'name': child.fullname(),
+	'name': child.first_name,
 	'sid': schedule.id,
 	'arrival': schedule.arrival
 	}
@@ -40,12 +40,11 @@ def AjaxChildCreateArrival(request):
 # Enregistre l'heure de départ d'un enfant
 def AjaxChildCreateDeparture(request):
 	child_id = request.POST.get('id', None)
+	print(child_id)
 	child=Child.objects.filter(pk=child_id)[0]
-	child_name=child.fullname()
 	
 	try: # TODO mériterait un logging (jamais censé arriver)
 		schedule=child.incomplete_schedule()
-		print(f'Check {schedule}')
 		if(schedule==None):
 			return JsonResponse({'error': "L'enfant est déjà parti."})
 	except Schedule.DoesNotExist:
@@ -56,7 +55,7 @@ def AjaxChildCreateDeparture(request):
 	
 	data = {
 	'sid': schedule.id, # utilisé pour permettre l'édition de la date de départ de l'enfant
-	'name': child_name, # utilisé pour l'affichage
+	'name': child.first_name, # utilisé pour l'affichage
 	'departure': schedule.departure # utilisé pour l'affichage
 	}
 	return JsonResponse(data)
@@ -69,7 +68,6 @@ def AjaxChildEditDeparture(request):
 	schedule=Schedule.objects.filter(pk=schedule_id)[0]
 	
 	new_departure=get_datetime_from_hhmm(request.POST.get('hour', None))
-
 	try: 
 		if(new_departure==None):
 			return JsonResponse({'error': "La date de départ renseignée n'a pas été trouvée."})
@@ -109,7 +107,7 @@ def AjaxChildRemoveArrival(request):
 
 
 
-# Modifie l'heure d'arrivée d'un schedule
+# Modifie l'heure d'arrivée d'un schedule	
 def AjaxChildEditArrival(request):
 	schedule_id = request.POST.get('id', None)
 	
@@ -118,10 +116,9 @@ def AjaxChildEditArrival(request):
 	new_arrival=get_datetime_from_hhmm(request.POST.get('hour', None))
 	try: 
 		if(new_arrival==None):
-			return JsonResponse({'error': "La date d'arrivée renseignée n'a pas été trouvée."})
-
-		print(new_arrival)
-	
+			return JsonResponse({'error': "L'heure d'arrivée renseignée est invalide."})
+		if(schedule.departure and new_arrival>schedule.departure):
+			return JsonResponse({'error': "L'heure d'arrivée renseignée est après l'heure de départ renseignée."})
 	except ValueError:
 		return JsonResponse({'error': "Veuillez entrer l'heure sous le format hh:mm."})
 	except Schedule.DoesNotExist:
