@@ -27,11 +27,11 @@ class ParentProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailV
 		context['new_child_action'] =reverse('parent_create_child', kwargs={'pk':self.kwargs['pk']})
 		context['new_reliable_form'] = NewReliableForm(pk=self.kwargs['pk'])
 		context['new_reliable_action']=reverse('parent_create_reliable', kwargs={'pk':self.kwargs['pk']})
-		context['personal_data_form'] = ParentUpdateForm(request=self.request,
-																										 instance=self.object.uid,
+		context['personal_data_form'] = ParentUpdateForm(instance=User.objects.get(pk=self.kwargs['pk']),
 																										 initial={'phone':self.object.phone})
 		return context
 	
+# TODO validation et EmbeddedForm 	
 # Formulaire d'édition d'un parent donné, embedded dans ParentProfileView
 class ParentUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.UpdateView):
 	form_class=ParentUpdateForm
@@ -39,14 +39,9 @@ class ParentUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.Upd
 	
 	def test_func(self):
 		return is_parent_permitted(self)
-	
-	def get_form_kwargs(self):
-		kwargs=super().get_form_kwargs()
-		kwargs['pk']=self.kwargs['pk']
-		return kwargs
 		
 	def get_success_url(self):
-		return reverse('parent_profile', args=[self.request.user.id])
+		return reverse('parent_profile', args=[self.kwargs['pk']])
 
 # Formulaire de création d'une personne de confiance (susceptible d'être récupérée par le parent)
 class CreateReliableView(LoginRequiredMixin, UserPassesTestMixin, EmbeddedCreateView):
