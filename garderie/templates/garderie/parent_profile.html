@@ -91,7 +91,7 @@
 				</a> 
 			</td>
 			<td>
-				<form method="POST" action="{% url 'child_delete' child.id  %}?next={{request.path}}">
+				<form method="POST" action="{% url 'child_delete' child.id  %}?next={{request.path}}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{child.fullname}}');">
 	 				{% csrf_token %}
 	 				<input type="submit" value="X" class="btn btn-danger btn-sm">
 				</form>

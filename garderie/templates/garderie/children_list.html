@@ -54,6 +54,10 @@
 						}
 			    	});
 
+$('div.preventDiv').click(function(e){
+    e.stopPropagation();
+});
+
 </script>
 <script src="{% static '/garderie/js/child_list.js/' %}"></script>
 
@@ -94,7 +98,7 @@
 	</table>
 
 	<h1>Liste des enfants</h1>
-	<table id="table2" class="table table-striped table-bordered">
+	<table id="table2" class="display table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th>Enfant</th>
@@ -121,11 +125,13 @@
 					{% endwith %}
 				</td>				
 				{% if user.is_superuser %}
-					<td> 
-						<form method="POST" action="{% url 'child_delete' child.id  %}">
-			 				{% csrf_token %}
+					<td>
+						<div class="preventDiv">
+							<form method="POST" action="{% url 'child_delete' child.id  %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{child.fullname}}');">
+			 					{% csrf_token %}
 				 				<input type="submit" value="X" class="btn btn-danger btn-sm">
 							</form>
+						</div>
 					</td> 
 					{% endif %}				
 				</tr>
