@@ -187,5 +187,19 @@ $(document).ready(function() {
 		});
 	});
 	
+	
+	// Valide tous les départs
+	$('.button_all_arrivals').click(function() {
+		$('.button_in_arrival').each(function() {
+		$(this).click();
+		});
+	});
+	// Valide toutes les arrivées
+	$('.button_all_departures').click(function() {
+		$('.button_in_departure').each(function() {
+		$(this).click();
+		});
+	});
+	
 });
 

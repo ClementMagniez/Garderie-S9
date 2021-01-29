@@ -106,7 +106,7 @@ class Child(models.Model):
 		res=self.incomplete_schedule()
 		if not res:
 			if self.was_here():
-				return self.schedule_set.all().latest('id')
+				return self.schedule_set.latest('id')
 			return None
 		return res
 		

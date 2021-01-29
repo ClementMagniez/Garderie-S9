@@ -36,20 +36,17 @@ def AjaxChildCreateArrival(request):
 	'arrival': schedule.arrival
 	}
 	
-
-
 	return JsonResponse(data)
 
 # Enregistre l'heure de départ d'un enfant
 def AjaxChildCreateDeparture(request):
 	child_id = request.POST.get('id', None)
-	print(child_id)
-	child=Child.objects.filter(pk=child_id)[0]
+	child=Child.objects.get(pk=child_id)
 	
 	try: # TODO mériterait un logging (jamais censé arriver)
 		schedule=child.incomplete_schedule()
 		if(schedule==None):
-			return JsonResponse({'error': "L'enfant est déjà parti."})
+			return JsonResponse({'error': f'(child.first_name) est déjà parti.'})
 	except Schedule.DoesNotExist:
 		return JsonResponse({'error' : 'Erreur inconnue'})
 	
@@ -57,9 +54,9 @@ def AjaxChildCreateDeparture(request):
 	schedule.save()
 	
 	data = {
-	'sid': schedule.id, # utilisé pour permettre l'édition de la date de départ de l'enfant
-	'name': child.first_name, # utilisé pour l'affichage
-	'departure': schedule.departure # utilisé pour l'affichage
+	'sid': schedule.id,
+	'name': child.first_name,
+	'departure': schedule.departure
 	}
 	return JsonResponse(data)
 
@@ -75,7 +72,7 @@ def AjaxChildEditDeparture(request):
 		if(new_departure==None):
 			return JsonResponse({'error': "La date de départ renseignée n'a pas été trouvée."})
 		if(new_departure<schedule.arrival):
-			return JsonResponse({'error': "La date de départ renseignée est avant la date d'arrivée de l'enfant."})
+			return JsonResponse({'error': f'La date de départ renseignée est avant la date d\'arrivée de {schedule.child.first_name}.'})
 	except ValueError:
 		return JsonResponse({'error': "Veuillez entrer l'heure sous le format YYYY-MM-DD hh:mm:ss."})
 	except Schedule.DoesNotExist:
@@ -99,7 +96,7 @@ def AjaxChildRemoveArrival(request):
 	try: 
 		schedule=Schedule.objects.filter(pk=schedule_id)[0]
 	except IndexError:
-		return JsonResponse({'error' : 'L\'enfant a déjà été retiré de la liste de présence.'})
+		return JsonResponse({'error' : f'{schedule.child.first_name} a déjà été retiré de la liste de présence.'})
 		
 	schedule.delete()
 	
@@ -109,7 +106,7 @@ def AjaxChildRemoveArrival(request):
 	return JsonResponse(data)
 
 
-
+	
 # Modifie l'heure d'arrivée d'un schedule	
 def AjaxChildEditArrival(request):
 	schedule_id = request.POST.get('id', None)
@@ -136,23 +133,6 @@ def AjaxChildEditArrival(request):
 	'name': schedule.child.first_name, # utilisé pour l'affichage
 	}
 	return JsonResponse(data)
-
-# Supprime un Schedule donné par 'id'
-def AjaxChildRemoveArrival(request):
-	schedule_id = request.POST.get('id', None)
-
-	try: 
-		schedule=Schedule.objects.filter(pk=schedule_id)[0]
-	except IndexError:
-		return JsonResponse({'error' : 'L\'enfant a déjà été retiré de la liste de présence.'})
-		
-	schedule.delete()
-	
-	data = {
-	'cid': schedule.child.id, # utilisé pour retrouver le row dans la table
-	}
-	return JsonResponse(data)
-
 
 def AjaxShowBillModal(request):
 	bill_id=request.POST.get('id', None)
