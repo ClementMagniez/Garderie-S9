@@ -10,7 +10,7 @@ import random
 import string
 
 from django.http import JsonResponse
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 
 ### Recense les fonctions et classes utilitaires utilisées par d'autres fichiers de l'app
 
@@ -31,6 +31,21 @@ class EmbeddedCreateView(CreateView):
 		self.object=form.save()
 		return JsonResponse({})
 
+class EmbeddedUpdateView(UpdateView):
+	template_name='garderie/forms/base_form.html' # inutile en pratique, embedded_form.js intercepte
+
+	def get_form_kwargs(self):
+		kwargs=super().get_form_kwargs()
+		kwargs['pk']=self.kwargs['pk']
+		return kwargs
+		
+	def form_invalid(self, form):
+		return JsonResponse(form.errors)
+	
+	def form_valid(self, form):
+		print("form_valid")
+		self.object=form.save()
+		return JsonResponse({})
 
 
 # Renvoie un Bill correspondant au même enfant, mois et an que schedule ;

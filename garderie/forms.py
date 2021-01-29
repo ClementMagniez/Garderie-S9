@@ -179,7 +179,7 @@ class ChildUpdateForm(forms.ModelForm):
 	class Meta:
 		model = Child
 		fields = ['first_name', 'last_name']
-
+		
 
 # Formulaire de création d'un ExpectedPresence pour un enfant donné
 class NewPresenceForm(forms.ModelForm):
@@ -213,7 +213,14 @@ class NewPresenceForm(forms.ModelForm):
 		return presence
 
 
+class EditScheduleForm(forms.ModelForm):
+	class Meta:
+		model=Schedule
+		fields=['arrival', 'departure']
 
+	def __init__(self, *args, **kwargs):
+		self.sid=kwargs.pop('pk')
+		super().__init__(*args, **kwargs)
 
 class NewHourlyRateForm(forms.ModelForm):
 	class Meta:

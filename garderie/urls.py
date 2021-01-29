@@ -28,6 +28,7 @@ url_enfant=[
         path('enfant/<int:pk>/presence/register/', views.CreatePresenceView.as_view(), name='schedule_register'),
         path('enfant/<int:fk>/presence/<int:pk>/delete/', views.PresenceDeleteView.as_view(), name='presence_delete'),
         path('enfant/<int:fk>/schedule/<int:pk>/delete/', views.ScheduleDeleteView.as_view(), name='schedule_delete'),
+        path('enfant/schedule/<int:pk>/edit/', views.EditScheduleView.as_view(), name='schedule_edit'),
 ]
 
 url_ajax=[
@@ -36,6 +37,8 @@ url_ajax=[
         path('ajax/edit_hour_arrival/',  permission_required('is_staff')(views.AjaxChildEditArrival), name='ajax_edit_arrival'),
         path('ajax/edit_hour_departure/',  permission_required('is_staff')(views.AjaxChildEditDeparture), name='ajax_edit_departure'),
         path('ajax/remove_arrival/',  permission_required('is_staff')(views.AjaxChildRemoveArrival), name='ajax_remove_arrival'),
+        path('ajax/show_bill_modal/',  views.AjaxShowBillModal, name='ajax_show_bill_modal'),
+        path('ajax/show_schedule_form_modal/',  views.AjaxShowScheduleFormModal, name='ajax_show_schedule_form_modal'),
 ]
 
 

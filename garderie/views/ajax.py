@@ -1,9 +1,12 @@
-from ..models import Child, HourlyRate, Schedule
+from ..models import Child, HourlyRate, Schedule, Bill
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime
+from ..forms import EditScheduleForm
 from ..utils import get_datetime_from_hhmm
-# Contient les views répondant à une requête AJAX
+from django.shortcuts import render
+from django.urls import reverse
+### Contient les views répondant à une requête AJAX
 
 # Enregistre l'heure d'arrivée d'un enfant 
 def AjaxChildCreateArrival(request):
@@ -150,6 +153,20 @@ def AjaxChildRemoveArrival(request):
 	}
 	return JsonResponse(data)
 
+
+def AjaxShowBillModal(request):
+	bill_id=request.POST.get('id', None)
+	context={'bill':Bill.objects.get(pk=bill_id)}
+	return render(request, 'garderie/include/admin_bills_modal.html', context)
+
+
+def AjaxShowScheduleFormModal(request):
+	schedule_id=request.POST.get('id', None)
+	schedule=Schedule.objects.get(pk=schedule_id)
+	context={'schedule':schedule,
+					 'form':EditScheduleForm(instance=schedule, pk=schedule_id), 
+					 'action':reverse('schedule_edit',  kwargs={'pk':schedule_id})}
+	return render(request, 'garderie/include/child_schedule_modal.html', context)
 
 
 
