@@ -18,9 +18,6 @@ $(document).ready(function () {
 			url: url,
 			data: $(this).serialize(),
 			success: function(data) {
-				console.log(data);
-
-
 				if (data['__all__']) {
 					form.find('.embedded_error').remove();
 					for(error in data['__all__'])
@@ -28,12 +25,13 @@ $(document).ready(function () {
 				}
 					else { 
 						// Gère les formulaires intégrés à une modale et ceux présents directement sur la page 
-						if($('#myModal').length) {
+						if($('#myModal form').length) {
 							$('#myModal').modal('toggle');
 						}
 						else {
 							location.reload(); 
 						} 
+				}
 			},
 			error: function(xhr, ajaxOptions, thrownError) {
 				console.log(xhr);

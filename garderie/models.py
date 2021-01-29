@@ -1,10 +1,12 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext
 from datetime import datetime, timedelta, date, time
 from math import ceil, floor
 import garderie.utils 
 
+	
 # Managers
 
 class ScheduleManager(models.Manager):
@@ -127,7 +129,7 @@ class HourlyRate(models.Model):
 class Bill(models.Model):
 
 	# Tuple "numéro dans la DB, valeur lisible" : on convertit donc le numéro en un string
-	MONTH=[(m, date(1900, m, 1).strftime('%B'))  for m in range(1,13)]
+	MONTH=[(m, ugettext(date(1900, m, 1).strftime('%B')).capitalize())  for m in range(1,13)]
 	YEAR=[(y, date(y, 1,1).strftime('Y')) for y in range(2000,timezone.now().year+1)] # TODO Y ou %Y ? 
 
 
@@ -218,7 +220,7 @@ class Schedule(models.Model):
 	
 	
 class ExpectedPresence(models.Model):
-	DAY=[(d, date(1900, 1,d).strftime('%A')) for d in range(1,8)]# même système que Bill : TODO DRY les deux ?
+	DAY=[(d, ugettext(date(1900, 1,d).strftime('%A')).capitalize()) for d in range(1,8)]
 	PERIOD=[(m, ['Matin', 'Soir'][m]) for m in range(0,2)] 
 	
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
