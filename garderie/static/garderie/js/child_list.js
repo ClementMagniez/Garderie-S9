@@ -12,22 +12,24 @@ function formattedDateFromString(str) {
 
 // Supprime un Schedule et le row associé
 function removeArrival(schedule_id) {
-	$.ajax({
-		headers: { "X-CSRFToken": csrf}, 
-		type: 'POST',
-		url: url_remove_arrival,
-		data: {
-			'id': schedule_id,
-		},
-		dataType: 'json',
-		success: function (data) {			
-			if(data['error'])
-				alert(data['error']);	
-			else {
-				data_tab1.rows(`[data-sid='${schedule_id}']`).remove().draw();
+	if(confirm('Êtes-vous sûr de vouloir le supprimer de la liste ?')){
+		$.ajax({
+			headers: { "X-CSRFToken": csrf}, 
+			type: 'POST',
+			url: url_remove_arrival,
+			data: {
+				'id': schedule_id,
+			},
+			dataType: 'json',
+			success: function (data) {			
+				if(data['error'])
+					alert(data['error']);	
+				else {
+					data_tab1.rows(`[data-sid='${schedule_id}']`).remove().draw();
+				}
 			}
-		}
-	});
+		});
+	}
 }
 
 
