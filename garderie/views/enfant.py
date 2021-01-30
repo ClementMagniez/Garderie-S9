@@ -48,7 +48,6 @@ class CreatePresenceView(EmbeddedCreateView):
 	form_class=NewPresenceForm
 	
 	def get_success_url(self):
-		print("lol")
 		return reverse('child_profile', args=[self.kwargs['pk']])
 	
 # Formulaire d'édition d'un enfant donné, embedded dans ChildProfileView

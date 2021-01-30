@@ -93,14 +93,6 @@ class Child(models.Model):
 		else:
 			return False
 	# Renvoie true si l'enfant a été présent (puis est parti) dans le créneau courant	
-
-	# Check si l'enfant est parti il y a moins de 3h
-	def was_here(self):
-		today=timezone.now()
-		for schedule in self.schedule_set.all():
-			if schedule.departure+timedelta(hours=3)>today:
-				return True
-		return False
 		
 	# Return un Schedule incomplet selon incomplete_schedule ; s'il n'y en a pas mais was_here est True,
 	# return le dernier Schedule complet ; si was_here est False, return None
@@ -112,12 +104,27 @@ class Child(models.Model):
 			return None
 		return res
 		
-		
-		
+	# Renvoie un tuple des deux parents de l'enfant
 	def parents(self):
 		second_parent_uid=self.second_parent.uid if self.second_parent else None
-		
-		return (self.parent.uid, second_parent_uid)	
+		return (self.parent.uid, second_parent_uid)
+	
+
+	# True si l'enfant est parti il y a moins de 3h
+	def was_here(self):
+		today=timezone.now()
+		for schedule in self.schedule_set.all():
+			if schedule.departure+timedelta(hours=3)>today:
+				return True
+		return False
+
+	# True si l'enfnat a été présent au Date ou Datetime renseigné
+	# Différent de was_here qui check précisément un créneau de la journée actuelle
+	def was_here_this_day(day):
+		for schedule in self.schedule_set.all():
+			if schedule.was_this_day():
+				return True
+		return False
 
 
 class HourlyRate(models.Model):
@@ -128,9 +135,8 @@ class HourlyRate(models.Model):
 		
 class Bill(models.Model):
 
-	# Tuple "numéro dans la DB, valeur lisible" : on convertit donc le numéro en un string
 	MONTH=[(m, ugettext(date(1900, m, 1).strftime('%B')).capitalize())  for m in range(1,13)]
-	YEAR=[(y, date(y, 1,1).strftime('Y')) for y in range(2000,timezone.now().year+1)] # TODO Y ou %Y ? 
+	YEAR=[(y, date(y, 1,1).strftime('Y')) for y in range(2000,timezone.now().year+1)]
 
 
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
@@ -217,6 +223,10 @@ class Schedule(models.Model):
 		arrival, departure=self.rounded_arrival_departure()
 		duration=(departure-arrival).seconds/1800 # calcul à la demi-heure	
 		return round(duration*self.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
+	
+	# True si le Schedule a eu lieu au Date ou Datetime renseigné
+	def was_this_day(date):		
+		return this.arrival.day==date.day
 	
 	
 class ExpectedPresence(models.Model):

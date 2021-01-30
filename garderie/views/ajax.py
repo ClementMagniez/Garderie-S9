@@ -46,7 +46,7 @@ def AjaxChildCreateDeparture(request):
 	try: # TODO mériterait un logging (jamais censé arriver)
 		schedule=child.incomplete_schedule()
 		if(schedule==None):
-			return JsonResponse({'error': f'(child.first_name) est déjà parti.'})
+			return JsonResponse({'error': f'{child.first_name} est déjà parti.'})
 	except Schedule.DoesNotExist:
 		return JsonResponse({'error' : 'Erreur inconnue'})
 	

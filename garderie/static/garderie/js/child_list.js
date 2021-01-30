@@ -11,7 +11,8 @@ function formattedDateFromString(str) {
 }
 
 // Supprime un Schedule et le row associé
-function removeArrival(schedule_id) {
+function removeArrival(schedule_id, child_id) {
+
 	$.ajax({
 		headers: { "X-CSRFToken": csrf}, 
 		type: 'POST',
@@ -25,6 +26,7 @@ function removeArrival(schedule_id) {
 				alert(data['error']);	
 			else {
 				data_tab1.rows(`[data-sid='${schedule_id}']`).remove().draw();
+				$(`#table2 [data-cid=${child_id}] td:eq(1)`).html('<button type="button" class="button_out_arrival">Arrivée</button>');
 			}
 		}
 	});
@@ -37,7 +39,7 @@ function getRowForChildIn(data, child_id) {
 	let arrival=formattedDateFromString(data['arrival']);
 
 	return [
-		`<button class="btn btn-danger btn-sm" onclick="removeArrival(${data['sid']})">x</button>`,
+		`<button class="btn btn-danger btn-sm" onclick="removeArrival(${data['sid']}, ${child_id})">x</button>`,
 		`<a href="${child_id}">${data['name']}</a>`,
 		`<input type="time" class="input_arrival" required value="${arrival}"></input>`,
 		`<button type='button' class='button_in_departure'>Départ</button>`
@@ -79,13 +81,56 @@ function addDeparture(data, cid) {
 
 }
 
+async function sendDeparture(child_id) {
+			await $.ajax({
+		headers: { "X-CSRFToken": csrf}, 
+		type: 'POST',
+		url: url_out,
+		data: {
+			'id': child_id,
+		},
+		dataType: 'json',
+		success: function (data) {
+			if(data['error']) {
+			
+				console.log("échec departure pour "+child_id);
+				alert(data['error']);
+			}
+			else
+				console.log("succès departure pour "+child_id);
+				addDeparture(data, child_id);
+		}
+	});
+} 
+
+async function sendArrival(child_id) {
+	await $.ajax({
+		headers: { "X-CSRFToken": csrf}, 
+		type: 'POST',
+		url: url_in,
+		data: {
+			'id': child_id,
+		},
+		dataType: 'json',
+		success: function (data) {
+			
+			if(data['error'])
+				alert(data['error']);	
+			else 
+				editChildExpectedArrival(data, child_id, data_tab1);
+		}
+	});
+
+}
+
 
 $(document).ready(function() {
 	
 	// génère une heure d'arrivée depuis un enfant imprévu
-	$('.button_out_arrival').click( function() {
-		child_id=$(this).parent().parent().data("cid");
-
+	data_tab2.on( 'click', '.button_out_arrival', function() {
+		cell=$(this).parent();
+		child_id=cell.parent().data("cid");
+		
 
 		$.ajax({
 			headers: { "X-CSRFToken": csrf}, 
@@ -99,54 +144,27 @@ $(document).ready(function() {
 				
 				if(data['error'])
 					alert(data['error']);	
-				else 
+				else {
 					addChildUnexpectedArrival(data, child_id, data_tab1);
+					cell.html("</span>Présent<span>");								
+				}
 			}
 		});
 	});
 
-	$('.button_in_arrival').click( function() {
+	// génère une heure d'arrivée depuis un enfant prévu
+	data_tab1.on('click', '.button_in_arrival', function(event) { 
 		child_id=$(this).parent().parent().data("cid");
-
-		$.ajax({
-			headers: { "X-CSRFToken": csrf}, 
-			type: 'POST',
-			url: url_in,
-			data: {
-				'id': child_id,
-			},
-			dataType: 'json',
-			success: function (data) {
-				
-				if(data['error'])
-					alert(data['error']);	
-				else 
-					editChildExpectedArrival(data, child_id, data_tab1);
-			}
-		});
+		sendArrival(child_id);
 	});
 
 
 
 	// génère une heure de départ
-	$('#table1').on('click', '.button_in_departure', function() {
+	data_tab1.on('click', '.button_in_departure', function(event) { 
 		child_id=$(this).parent().parent().data("cid");
-
-		$.ajax({
-			headers: { "X-CSRFToken": csrf}, 
-			type: 'POST',
-			url: url_out,
-			data: {
-				'id': child_id,
-			},
-			dataType: 'json',
-			success: function (data) {
-				if(data['error'])
-					alert(data['error']);
-				else
-					addDeparture(data, child_id);
-			}
-		});
+		
+		sendDeparture(child_id);
 	});
 
 	// Modifie une date d'arrivée
@@ -191,13 +209,13 @@ $(document).ready(function() {
 	// Valide tous les départs
 	$('.button_all_arrivals').click(function() {
 		$('.button_in_arrival').each(function() {
-		$(this).click();
+			$(this).click();
 		});
 	});
 	// Valide toutes les arrivées
 	$('.button_all_departures').click(function() {
 		$('.button_in_departure').each(function() {
-		$(this).click();
+			$(this).click();
 		});
 	});
 	
