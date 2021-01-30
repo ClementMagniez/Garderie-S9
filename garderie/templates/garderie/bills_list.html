@@ -1,30 +1,16 @@
 {% extends 'garderie/base.html' %}
 
+
 {% block title %}Liste des factures{% endblock %}
+
 {% load static %}
+
 {% block scripts %}
-<script type="text/javascript">
-
-	let data_tab = $('#bill_tab').DataTable({
-			    		"ordering": true,
-			    		paging: false,
-			    		"order": [[ 0, "asc" ]],
-			    		"language": {
-						    "emptyTable": "Aucune facture dans la base de données",
-						    "search":         "Rechercher :",
-						    "info":           "Données de _START_ à _END_ sur _TOTAL_",
-    						"infoEmpty":      "Données 0 à 0 sur 0",
-
-    						"infoFiltered":   "(filtré depuis _MAX_ entrées totales)",
-    						"lengthMenu":     "Montre _MENU_ entrées",
-						    "loadingRecords": "Chargement...",
-						    "processing":     "Exécution...",
-						    "zeroRecords":    "Aucune correspondance trouvée"
-						}
-		    		});
+<script>
 
 	let csrf='{{ csrf_token}}';
 	let url_get_bill_modal='{% url 'ajax_show_bill_modal' %}';
+	let url_swap_bills_display='{% url 'ajax_swap_bills_display'%}';
 
 </script>
 
@@ -33,40 +19,21 @@
 {% endblock %}
 
 {% block body %}
+<div class="container pt-1">
+<span>Afficher les factures de :</span>
 
-{# bd-example-modal-lg #}
+<input id="swap_bills_input" type="month">
+<button id="swap_bills_display">Voir</button>
+</div>
+
+
+
 <div class="modal hide fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 </div>
 
-<div class="container pt-3">
+<div id="table_container" class="container pt-3">
 	{% if user.is_authenticated %}
-	<table id="bill_tab" class="table table-striped table-bordered">
-		<thead>
-			<th>Parent</th>
-			<th>Enfant</th>
-			<th>Date</th>
-			<th>Montant</th>
-			<th>Détails</th>
-		</thead>
-		{% for bill in bills_list %}
-		<tr>
-			<td>
-				<a href="{% url 'parent_profile' bill.child.parent.uid_id %}">{{ bill.child.parent.fullname }}</a>
-			</td>
-			<td>
-				<a href="{% url 'child_profile' bill.child.id %}">{{ bill.child.first_name }}</a>
-			</td>
-			<td> 
-				{{bill.month | stringformat:'02d'}}/{{ bill.year}}
-			</td>
-			<td>
-				{{ bill.amount | floatformat:'2'}}€
-			</td>
-			<td> 
-	<button data-bid="{{bill.id}}" class="btn btn-secondary btn-sm button_detail">Détail</button>
-		</tr>
-		{% endfor %}
-	</table>
+		{% include 'garderie/include/bills_table.html' with bills_list=bills_list %}
 	{% else %}
 		<p>Connectez-vous pour voir les factures</p>
 	{% endif %}

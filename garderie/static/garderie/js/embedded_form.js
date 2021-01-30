@@ -24,8 +24,8 @@ $(document).ready(function () {
 						form.find('table').prepend('<tr class="embedded_error"><td colspan="2"><ul>'+data['__all__']+'</ul></td></tr>');
 				}
 					else { 
-						// Gère les formulaires intégrés à une modale et ceux présents directement sur la page 
-						if($('#myModal form').length) {
+						// Traite différemment les formulaires intégrés à une modale et ceux présents directement sur la page 
+						if(form.parents('#myModal').length) {
 							$('#myModal').modal('toggle');
 						}
 						else {

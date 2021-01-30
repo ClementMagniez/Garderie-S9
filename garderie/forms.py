@@ -212,13 +212,17 @@ class NewPresenceForm(forms.ModelForm):
 
 
 class EditScheduleForm(forms.ModelForm):
+	departure=forms.CharField(required=False)
 	class Meta:
 		model=Schedule
 		fields=['arrival', 'departure']
 
-	def __init__(self, *args, **kwargs):
-		self.sid=kwargs.pop('pk')
+	def __init__(self, *args, **kwargs): # indispensable car utilisé dans une EmbeddedUpdateView
+		kwargs.pop('pk')
 		super().__init__(*args, **kwargs)
+
+
+
 
 class NewHourlyRateForm(forms.ModelForm):
 	class Meta:

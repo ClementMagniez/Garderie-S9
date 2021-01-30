@@ -54,11 +54,8 @@
 				{% endfor %}
 				</td>
 			<td> 
-				{% comment %} 
-					TODO : Méthode grossière pour POST vers /delete/, mais 
-					on doit pouvoir faire plus élégant
-				{% endcomment %}
-				<form method="POST" action="{% url 'parent_delete' parent.uid_id  %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{ parent.uid.first_name }} '+'{{ parent.uid.last_name }}' + ' ?');">
+
+				<form method="POST" action="{% url 'parent_delete' parent.uid_id  %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{ parent.fullname }}' + ' ?');">
    				{% csrf_token %}<input class="btn btn-danger btn-sm" type="submit" value="SUPPRIMER">
 				</form>
 			</td>
