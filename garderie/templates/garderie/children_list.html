@@ -7,12 +7,13 @@
 <script type="text/javascript">
 
 
-	var csrf="{{csrf_token}}";
-	var url_in="{% url 'ajax_arrival' %}";
-	var url_out="{% url 'ajax_departure' %}";
-	var url_update_departure="{% url 'ajax_edit_departure' %}";
-	var url_update_arrival="{% url 'ajax_edit_arrival' %}";
-	var url_remove_arrival="{% url 'ajax_remove_arrival' %}";
+	let csrf="{{csrf_token}}";
+	let url_in="{% url 'ajax_arrival' %}";
+	let url_out="{% url 'ajax_departure' %}";
+	let url_update_departure="{% url 'ajax_edit_departure' %}";
+	let url_update_arrival="{% url 'ajax_edit_arrival' %}";
+	let url_remove_arrival="{% url 'ajax_remove_arrival' %}";
+	let url_children_here_day="{% url 'ajax_children_here_day' %}";
 
 	let data_tab1 = $('#table1').DataTable({
 			    		"ordering": true,
@@ -111,7 +112,12 @@
 	</table>
 
 
+<div class="modal fade bd-example-modal-lg" id="childrenModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+</div>
+
 	<h1>Liste des enfants</h1>
+	<input id="input_date_day" type="date"></input>
+	<button id="submit_date_day" type="submit">Voir</button>
 	<table id="table2" class="table table-striped table-bordered">
 		<thead>
 			<tr>
@@ -130,7 +136,7 @@
 							{{child.fullname}}
 					</a>
 				</td> 
-				<td> {% if child.was_here %}
+				<td> {% if child.present_next_time or child.incomplete_schedule or child.was_here %}
 								<span>Présent</span>
 							{% else %}
 								<button type="button" class="button_out_arrival">Arrivée</button>
@@ -138,9 +144,9 @@
 				</td>				
 				{% if user.is_superuser %}
 					<td> 
-						<form method="POST" action="{% url 'child_delete' child.id  %}">
+						<form method="POST" action="{% url 'child_delete' child.id  %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{child.fullname}}' + ' ?');">
 			 				{% csrf_token %}
-				 				<input type="submit" value="X" class="btn btn-danger btn-sm">
+				 				<input type="submit" value="X" class="btn btn-danger btn-sm"></input>
 							</form>
 					</td> 
 					{% endif %}				

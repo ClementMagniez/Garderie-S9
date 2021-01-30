@@ -1,0 +1,40 @@
+<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="exampleModalLongTitle">Enfants présents le {{day}}</h5>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body border border-secondary">
+			
+     <div class="container">
+      <table class="table table-striped table-bordered">
+				<thead>
+					<tr>
+						<th>Nom</th>
+						<th>Horaire</th>
+					</tr>
+				</thead>
+					<tbody>
+						{% for child, schedules in schedules_dict.items %}
+							<tr>
+								<td>{{child.fullname}}</td>
+								<td>
+								{% for schedule in schedules %}
+									{{schedule.arrival|date:'G:i'}} -- {{schedule.departure|date:'G:i'|default:'Encore présent'}}<br/>
+								{% endfor %}
+								</td>
+							</tr>
+
+						{% endfor %}
+			</tbody>
+			</table>
+		</div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+      <button type="button" class="btn btn-outline-danger">Télécharger en PDF</button>
+    </div>
+  </div>
+</div>
