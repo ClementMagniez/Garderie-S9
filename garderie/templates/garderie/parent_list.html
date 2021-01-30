@@ -38,7 +38,7 @@
 		<tr>
 			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.uid.first_name }} {{ parent.uid.last_name }}</a></td>
 				<td>
-				{% for child in parent.child_set.all %} 
+				{% for child in parent.all_children %} 
 					{% if forloop.counter > 1 %}
 					<br>
 					{% endif %}

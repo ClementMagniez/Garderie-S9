@@ -1,10 +1,12 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext
 from datetime import datetime, timedelta, date, time
 from math import ceil, floor
 import garderie.utils 
 
+	
 # Managers
 
 class ScheduleManager(models.Manager):
@@ -17,6 +19,8 @@ class ScheduleManager(models.Manager):
 	def recent_schedules(self):
 		return super().get_queryset().filter(arrival__gte=datetime.today()-timedelta(days=30))
 
+
+
 ### Modèles
 
 class Parent(models.Model):
@@ -26,14 +30,21 @@ class Parent(models.Model):
 
 	def __str__(self):
 		return self.uid.first_name+" "+self.uid.last_name
-		
+			
 	def fullname(self):
 		return str(self)			
 
+
+	# Queryset fusionnant child_set et child_set2 TODO les fusionner automatiquement ?
+	def all_children(self):
+		return self.child_set.all() | self.child_set2.all()
+
 class Child(models.Model):
-	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
-	first_name=models.CharField(max_length=100, null=True, verbose_name="Prénom")
-	last_name=models.CharField(max_length=100, null=True, verbose_name="Nom")
+	parent=models.ForeignKey(Parent, on_delete=models.DO_NOTHING, related_name='child_set')
+	first_name=models.CharField(max_length=100, verbose_name="Prénom")
+	last_name=models.CharField(max_length=100, verbose_name="Nom")
+	second_parent=models.ForeignKey(Parent, on_delete=models.DO_NOTHING, related_name='child_set2', null=True)
+
 
 	def __str__(self):
 		return self.first_name+" "+self.last_name
@@ -60,6 +71,8 @@ class Child(models.Model):
 			
 		return bills[0] if bills else None
 
+
+	# Renvoie un tuple (datetime, ExpectedPresence) décrivant l'ExpectedPresence la plus proche
 	def next_presence(self):
 		all_occurrences=[presence.next_occurrence() for presence in self.expectedpresence_set.all()]
 		# compare des tuples : on sait cependant que le premier item du tuple (un datetime)
@@ -71,19 +84,59 @@ class Child(models.Model):
 		else:
 			return None
 	
+	# Renvoie true si l'enfant sera présent dans le créneau matin/soir suivant
+	def present_next_time(self):
+		next=self.next_presence()
+		today=timezone.now()
+		if next:
+			return next[0].day==today.day and next[1].hour_arrival<today.hour and next[1].hour_departure>today.hour
+		else:
+			return False
+	# Renvoie true si l'enfant a été présent (puis est parti) dans le créneau courant	
+		
+	# Return un Schedule incomplet selon incomplete_schedule ; s'il n'y en a pas mais was_here est True,
+	# return le dernier Schedule complet ; si was_here est False, return None
+	def schedule_to_display(self):
+		res=self.incomplete_schedule()
+		if not res:
+			if self.was_here():
+				return self.schedule_set.latest('id')
+			return None
+		return res
+		
+	# Renvoie un tuple des deux parents de l'enfant
+	def parents(self):
+		second_parent_uid=self.second_parent.uid if self.second_parent else None
+		return (self.parent.uid, second_parent_uid)
+	
+
+	# True si l'enfant est parti il y a moins de 3h
+	def was_here(self):
+		today=timezone.now()
+		for schedule in self.schedule_set.all():
+			if schedule.departure+timedelta(hours=3)>today:
+				return True
+		return False
+
+	# True si l'enfnat a été présent au Date ou Datetime renseigné
+	# Différent de was_here qui check précisément un créneau de la journée actuelle
+	def was_here_this_day(day):
+		for schedule in self.schedule_set.all():
+			if schedule.was_this_day():
+				return True
+		return False
 
 
 class HourlyRate(models.Model):
-	value=models.FloatField(verbose_name="Taux horaire")
+	value=models.FloatField(verbose_name="Taux à la demi-heure (en €)")
 	date_start=models.DateTimeField("Date de départ")
 	date_end=models.DateTimeField("Date de fin", null=True)
 		
 		
 class Bill(models.Model):
 
-	# Tuple "numéro dans la DB, valeur lisible" : on convertit donc le numéro en un string
-	MONTH=[(m, date(1900, m, 1).strftime('%B'))  for m in range(1,13)]
-	YEAR=[(y, date(y, 1,1).strftime('Y')) for y in range(2000,timezone.now().year+1)] # TODO Y ou %Y ? 
+	MONTH=[(m, ugettext(date(1900, m, 1).strftime('%B')).capitalize())  for m in range(1,13)]
+	YEAR=[(y, date(y, 1,1).strftime('Y')) for y in range(2000,timezone.now().year+1)]
 
 
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
@@ -117,14 +170,6 @@ class Schedule(models.Model):
 			self.bill=bill
 		super().save()	
 
-
-	# Recalcule la facture associée après avoir supprimé self
-	# TODO : décider si on supprime un Bill à 0€ ou pas
-#	def delete(self, *args, **kwargs):
-#		bill=self.bill
-#		super().delete()
-#		self.bill.calc_amount()
-	
 	### Méthodes de manipulation du modèle
 	
 	# Renvoie True si le schedule n'a pas encore de départ, False sinon
@@ -173,13 +218,19 @@ class Schedule(models.Model):
 	
 	# Return le coût d'un schedule 
 	def calc_amount(self):
+		if not self.departure:
+			return 0
 		arrival, departure=self.rounded_arrival_departure()
-		duration=(departure-arrival).seconds/3600
+		duration=(departure-arrival).seconds/1800 # calcul à la demi-heure	
 		return round(duration*self.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
+	
+	# True si le Schedule a eu lieu au Date ou Datetime renseigné
+	def was_this_day(date):		
+		return this.arrival.day==date.day
 	
 	
 class ExpectedPresence(models.Model):
-	DAY=[(d, date(1900, 1,d).strftime('%A')) for d in range(1,8)]# même système que Bill : TODO DRY les deux ?
+	DAY=[(d, ugettext(date(1900, 1,d).strftime('%A')).capitalize()) for d in range(1,8)]
 	PERIOD=[(m, ['Matin', 'Soir'][m]) for m in range(0,2)] 
 	
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
@@ -190,11 +241,11 @@ class ExpectedPresence(models.Model):
 	# une heure de départ et d'arrive selon self.period
 	@property
 	def hour_arrival(self):
-		return 7 if self.period==0 else 16
+		return 0 if self.period==0 else 12
 	
 	@property
 	def hour_departure(self):
-		return 9 if self.period==0 else 18
+		return 12 if self.period==0 else 20
 
 	# Renvoie un tuple (datetime, self)
 	# Exemple d'utilisation : si self.day==0 (lundi) et self.period=='Soir',
@@ -208,8 +259,7 @@ class ExpectedPresence(models.Model):
 		true_selfday=self.day-1
 		# si ce jour de la semaine est passée, on cherche la semaine suivante, sinon 
 		# celle-ci, donc 7 ou 0
-		week_determiner=7 if today_occurrence.hour<=today.hour and today.weekday()>=(true_selfday) else 0
-
+		week_determiner=7 if (today_occurrence.hour<=today.hour and today.weekday()==true_selfday) or today.weekday()>true_selfday else 0
 		return (today_occurrence+timedelta(days=(-today_occurrence.weekday())+true_selfday+week_determiner), self)
 		
 
@@ -220,7 +270,7 @@ class ExpectedPresence(models.Model):
 # d'aller le chercher et devant donc être connu	du système
 # N'interagit pas directement avec le système
 class ReliablePerson(models.Model):
-	parent=models.ForeignKey(Parent, on_delete=models.CASCADE)
+	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name='Enfant concerné')
 	first_name=models.CharField(max_length=100, verbose_name="Prénom")
 	last_name=models.CharField(max_length=100, verbose_name="Nom")
 	phone=models.CharField(max_length=20, null=True, verbose_name="Téléphone") 		

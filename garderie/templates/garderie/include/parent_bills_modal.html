@@ -44,7 +44,7 @@
 			</div>
         </div>
 				
-	{% for child in parent.child_set.all %}
+	{% for child in parent.all_children %}
 		{% with bill=child.last_bill %}
 		{% if bill %}
       <div class="container">

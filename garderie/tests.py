@@ -32,9 +32,9 @@ class BillTests(TestCase):
 		
 	def testCalcAmount(self):
 		self.assertEqual(len(self.bill.schedule_set.all()), 2)
-		self.assertEqual(self.bill.amount, 20)
+		self.assertEqual(self.bill.amount, 40)
 		self.bill.schedule_set.all()[0].delete()
-		self.assertEqual(self.bill.amount, 15)
+		self.assertEqual(self.bill.amount, 30)
 
 
 	def testGetCreateBill(self):

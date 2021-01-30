@@ -1,10 +1,10 @@
 {% extends 'garderie/base.html' %}
 {% block title %}Profil de {{ child.first_name}} {{child.last_name}}{% endblock %}
-
+{% load static %}
 {% block scripts %}
 <script type="text/javascript">
 
-	var data_tab = $('#enfant_profile_presence_tab').DataTable({
+	let data_tab = $('#enfant_profile_presence_tab').DataTable({
 			    		"ordering": true,
 			    		paging: false,
 			    		"order": [[ 1, "asc" ]],
@@ -20,7 +20,7 @@
 						}
 		    		});
 
-	var data_tab1 = $('#enfant_profile_recent_tab').DataTable({
+	let data_tab1 = $('#enfant_profile_recent_tab').DataTable({
 			    		"ordering": true,
 			    		paging: false,
 			    		"order": [[ 1, "asc" ]],
@@ -33,11 +33,11 @@
 						}
 		    		});
 
-	$(document).ready( function () { data_tab } );
-
-	$(document).ready( function () { data_tab1 } );
+	let csrf='{{csrf_token}}';
+	let url_get_form_modal='{% url 'ajax_show_schedule_form_modal'%}';
 
 </script>
+<script src="{% static '/garderie/js/child_profile.js/' %}"></script>
 {% endblock %}
 
 {% block body %} 
@@ -45,7 +45,12 @@
  <div class="bg-light p-4 border border-secondary rounded">
 
 <h1>{{ child.fullname}}</h1>
-<p>Responsable : <a href="{% url 'parent_profile' child.parent.uid_id %}">  {{child.parent.fullname}}</a> </p>
+<p>Parents : <br/>
+	<a href="{% url 'parent_profile' child.parent.uid_id %}">  {{child.parent.fullname}}</a><br/>
+	{% if child.second_parent %}
+	<a href="{% url 'parent_profile' child.second_parent.uid_id %}">  {{child.second_parent.fullname}}</a>
+	{% endif %}
+</p>
 
 <div class="pt-1">
 	<h2>Informations personnelles</h2>
@@ -70,16 +75,16 @@
 				<th> Période </th>
 			</thead>
 		{% for presence in child.expectedpresence_set.all %}
-			{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
+			{% if user.is_authenticated and user in child.parents or user.is_superuser %}
 				<tr>
+						<td>
 					<form method="POST" action="{% url 'presence_delete' child.id presence.id  %}?next={{request.path}}">
 						{% csrf_token %}
-						<td>
 							<input type="submit" value="x" class="btn btn-danger btn-sm">
+					</form>
 						</td>
 						<td> {{presence.get_day_display}} </td>
 						<td> {{presence.get_period_display}} </td>
-					</form>
 				</tr>
 			{% endif %}
 		{% endfor %}
@@ -91,28 +96,34 @@
 	{% endif %}
 </div>
 
+<div class="modal hide fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+</div>
+
+
+
 <div class="pt-3">
 <h4>Heures de présence récentes :</h4>
 {% if child.recent_schedules %}
 <div>
 	<table id="enfant_profile_recent_tab" class="table table-striped">
 	<thead>
-		{% if user.is_staff %}	
+		{% if user.is_superuser %}	
 			<th> Options </th>
 		{% endif %}
 		<th> Heure d'arrivée </th>
 		<th> Heure de départ </th>
 	</thead>
 		{% for schedule in child.recent_schedules %}
-			{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
+			{% if user.is_authenticated and user in child.parents or user.is_superuser %}
 				{% if not schedule.expected %}
 					<tr>
-						{% if user.is_staff %}
+						{% if user.is_superuser %}
 							<td>
-						<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
-							{% csrf_token %}
-								<input type="submit" value="x" class="btn btn-danger btn-sm">
-						</form>
+								<form method="POST" action="{% url 'schedule_delete' child.id schedule.id  %}?next={{request.path}}">
+									{% csrf_token %}
+										<input type="submit" value="x" class="btn btn-danger btn-sm">
+								</form>
+									<button data-cid='{{child.id}}' data-sid="{{schedule.id}}" class="btn btn-secondary btn-sm button_modal">Edit</button>
 							</td>
 						{% endif %}
 							<td> {{schedule.rounded_arrival|date:'d/m H:i'}} </td>
@@ -133,14 +144,15 @@
 
 <div class="pt-3">
 
-{% if user.is_authenticated and user.id == child.parent.uid_id or user.is_superuser %}
+{% if user.is_authenticated and user in child.parents or user.is_superuser %}
 	<h3>Inscrire {{child.first_name}} à une nouvelle plage horaire</h3>
 	{% include 'garderie/forms/embedded_form.html' with action=action form=schedule_form %}
 {% endif %}
 
 </div>
+</div>
+</div>
 
-</div>
-</div>
+
 
 {% endblock %}
