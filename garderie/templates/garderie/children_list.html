@@ -33,7 +33,17 @@
 						    "loadingRecords": "Chargement...",
 						    "processing":     "Execution...",
 						    "zeroRecords":    "Aucune correspondance trouvée"
-						}
+						},
+						"columns": [
+						    { "width": "10%" },
+						    { "width": "30%" },
+						    { "width": "30%" },
+						    { "width": "30%" },
+						  ],
+						columnDefs: [
+						    { className: 'text-center', targets: "_all" },
+						    { className: 'auto-fit', targets: [2, 3] }
+						  ]
 		    		});
 
 	let data_tab2 = $('#table2').DataTable({
@@ -51,7 +61,15 @@
 						    "loadingRecords": "Chargement...",
 						    "processing":     "Execution...",
 						    "zeroRecords":    "Aucune correspondance trouvée"
-						}
+						},
+						columnDefs: [
+						    { className: 'text-center', targets: "_all" }
+						  ],
+						"columns": [
+						    null,
+						    null,
+						    { "width": "10%" },
+						  ]
 			    	});
 
 </script>
@@ -70,8 +88,8 @@
 			<tr>
 				<th>Options</th>
 				<th>Enfant</th>
-				<th><button class="button_all_arrivals">Arrivée</button></th>
-				<th><button class="button_all_departures">Départ</button></th>
+				<th><button class="button_all_arrivals btn btn-primary btn-sm">Arrivée de tout les enfants</button></th>
+				<th><button class="button_all_departures btn btn-primary btn-sm">Départ de tout les enfants</button></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -91,7 +109,7 @@
 					<td> {% if schedule %}
 						<input type="time"class="input_arrival" required value="{{schedule.arrival |default_if_none:''|date:"G:i"}}"></input>
 							{% else %}
-								<button class="button_in_arrival">Arrivée</button>
+								<button class="button_in_arrival btn btn-secondary btn-sm">Arrivée</button>
 							
 							{% endif %}
 							
@@ -99,7 +117,7 @@
 					<td> {% if schedule and schedule.departure %}
 						<input type="time"class="input_departure" required value="{{schedule.departure |default_if_none:''|date:"G:i"}}"></input>
 							{% elif schedule and schedule.arrival %}
-								<button class="button_in_departure">Départ</button>
+								<button class="button_in_departure btn btn-secondary btn-sm">Départ</button>
 							
 							{% endif %}
 					</td>
@@ -130,10 +148,10 @@
 							{{child.fullname}}
 					</a>
 				</td> 
-				<td> {% if child.was_here %}
+				<td> {% if child.incomplete_schedule or child.was_here %}
 								<span>Présent</span>
 							{% else %}
-								<button type="button" class="button_out_arrival">Arrivée</button>
+								<button type="button" class="button_out_arrival btn btn-secondary btn-sm">Arrivée</button>
 							{% endif %}
 				</td>				
 				{% if user.is_superuser %}

@@ -26,7 +26,7 @@ function removeArrival(schedule_id, child_id) {
 				alert(data['error']);	
 			else {
 				data_tab1.rows(`[data-sid='${schedule_id}']`).remove().draw();
-				$(`#table2 [data-cid=${child_id}] td:eq(1)`).html('<button type="button" class="button_out_arrival">Arrivée</button>');
+				$(`#table2 [data-cid=${child_id}] td:eq(1)`).html('<button type="button" class="button_out_arrival btn btn-secondary btn-sm">Arrivée</button>');
 			}
 		}
 	});
@@ -42,7 +42,7 @@ function getRowForChildIn(data, child_id) {
 		`<button class="btn btn-danger btn-sm" onclick="removeArrival(${data['sid']}, ${child_id})">x</button>`,
 		`<a href="${child_id}">${data['name']}</a>`,
 		`<input type="time" class="input_arrival" required value="${arrival}"></input>`,
-		`<button type='button' class='button_in_departure'>Départ</button>`
+		`<button type='button' class='button_in_departure btn btn-secondary btn-sm'>Départ</button>`
 	];
 }
 
