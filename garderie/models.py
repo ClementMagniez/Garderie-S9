@@ -114,17 +114,15 @@ class Child(models.Model):
 	def was_here(self):
 		today=timezone.now()
 		for schedule in self.schedule_set.all():
-			if schedule.departure+timedelta(hours=3)>today:
+			if not schedule.departure or schedule.departure+timedelta(hours=3)>today:
 				return True
 		return False
 
-	# True si l'enfnat a été présent au Date ou Datetime renseigné
-	# Différent de was_here qui check précisément un créneau de la journée actuelle
-	def was_here_this_day(day):
-		for schedule in self.schedule_set.all():
-			if schedule.was_this_day():
-				return True
-		return False
+
+	# Renvoie une liste des Schedules de l'enfant ayant eu lieu au Date ou Datetime day
+	def schedules_this_day(self,day):
+		schedules=[s for s in self.schedule_set.all() if s.was_this_day(day) ]
+		return schedules
 
 
 class HourlyRate(models.Model):
@@ -225,9 +223,8 @@ class Schedule(models.Model):
 		return round(duration*self.rate.value)	# round pour éliminer les millisecondes inutiles et avoir un int
 	
 	# True si le Schedule a eu lieu au Date ou Datetime renseigné
-	def was_this_day(date):		
-		return this.arrival.day==date.day
-	
+	def was_this_day(self,date):		
+		return self.arrival.date()==date
 	
 class ExpectedPresence(models.Model):
 	DAY=[(d, ugettext(date(1900, 1,d).strftime('%A')).capitalize()) for d in range(1,8)]

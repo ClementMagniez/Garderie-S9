@@ -148,5 +148,19 @@ def AjaxShowScheduleFormModal(request):
 					 'action':reverse('schedule_edit',  kwargs={'pk':schedule_id})}
 	return render(request, 'garderie/include/child_schedule_modal.html', context)
 
+def AjaxShowChildrenHereThisDay(request):
+	day=request.POST.get('day', None)
+	day=datetime.strptime(day, "%Y-%m-%d").date()
+	schedules={}
+	for child in Child.objects.filter(schedule__arrival__date=day).distinct():
+		schedules[child]=child.schedules_this_day(day)
+	
+	print(schedules)
+	context={'schedules_dict':schedules,
+					 'day': day}
+	
+	return render(request, 'garderie/include/children_list_modal.html', context)
+
+
 
 

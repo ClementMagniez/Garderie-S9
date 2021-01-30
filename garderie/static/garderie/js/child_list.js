@@ -82,7 +82,7 @@ function addDeparture(data, cid) {
 }
 
 async function sendDeparture(child_id) {
-			await $.ajax({
+	await $.ajax({
 		headers: { "X-CSRFToken": csrf}, 
 		type: 'POST',
 		url: url_out,
@@ -93,11 +93,9 @@ async function sendDeparture(child_id) {
 		success: function (data) {
 			if(data['error']) {
 			
-				console.log("échec departure pour "+child_id);
 				alert(data['error']);
 			}
 			else
-				console.log("succès departure pour "+child_id);
 				addDeparture(data, child_id);
 		}
 	});
@@ -123,6 +121,63 @@ async function sendArrival(child_id) {
 
 }
 
+function sendArrivalFromAll(cell, child_id) {
+	$.ajax({
+		headers: { "X-CSRFToken": csrf}, 
+		type: 'POST',
+		url: url_in,
+		data: {
+			'id': child_id,
+		},
+		dataType: 'json',
+		success: function (data) {
+			
+			if(data['error'])
+				alert(data['error']);	
+			else {
+				addChildUnexpectedArrival(data, child_id, data_tab1);
+				cell.html("</span>Présent<span>");								
+			}
+		}
+	});
+}
+
+function editArrival(sid) {
+	$.ajax({
+		headers: { "X-CSRFToken": csrf}, 
+		type: 'POST',
+		url: url_update_arrival,
+		data: {
+			'id': sid,
+			'hour': $(this).val()
+		},
+		dataType: 'json',
+		success: function (data) {
+			
+			if(data['error'])
+				alert(data['error']);	
+		}
+	});
+}
+
+function editDeparture(sid) {
+	$.ajax({
+		headers: { "X-CSRFToken": csrf}, 
+		type: 'POST',
+		url: url_update_departure,
+		data: {
+			'id': sid,
+			'hour': $(this).val()
+		},
+		dataType: 'json',
+		success: function (data) {
+			
+			if(data['error'])
+				alert(data['error']);	
+		}
+	});
+}
+
 
 $(document).ready(function() {
 	
@@ -130,79 +185,29 @@ $(document).ready(function() {
 	data_tab2.on( 'click', '.button_out_arrival', function() {
 		cell=$(this).parent();
 		child_id=cell.parent().data("cid");
-		
-
-		$.ajax({
-			headers: { "X-CSRFToken": csrf}, 
-			type: 'POST',
-			url: url_in,
-			data: {
-				'id': child_id,
-			},
-			dataType: 'json',
-			success: function (data) {
-				
-				if(data['error'])
-					alert(data['error']);	
-				else {
-					addChildUnexpectedArrival(data, child_id, data_tab1);
-					cell.html("</span>Présent<span>");								
-				}
-			}
-		});
+		sendArrivalFromAll(cell,child_id);
 	});
 
 	// génère une heure d'arrivée depuis un enfant prévu
 	data_tab1.on('click', '.button_in_arrival', function(event) { 
-		child_id=$(this).parent().parent().data("cid");
-		sendArrival(child_id);
+		sendArrival($(this).parent().parent().data("cid"));
 	});
 
 
 
 	// génère une heure de départ
 	data_tab1.on('click', '.button_in_departure', function(event) { 
-		child_id=$(this).parent().parent().data("cid");
-		
-		sendDeparture(child_id);
+		sendDeparture($(this).parent().parent().data("cid"));
 	});
 
 	// Modifie une date d'arrivée
 	data_tab1.on('blur', '.input_arrival', function(event) { 
-		$.ajax({
-			headers: { "X-CSRFToken": csrf}, 
-			type: 'POST',
-			url: url_update_arrival,
-			data: {
-				'id': $(this).parent().parent().data("sid"),
-				'hour': $(this).val()
-			},
-			dataType: 'json',
-			success: function (data) {
-				
-				if(data['error'])
-					alert(data['error']);	
-			}
-		});
+		editArrival($(this).parent().parent().data("sid"));
 	});
 	
 	// Modifie une date de départ
 	data_tab1.on('blur', '.input_departure', function(event) { 
-		$.ajax({
-			headers: { "X-CSRFToken": csrf}, 
-			type: 'POST',
-			url: url_update_departure,
-			data: {
-				'id': $(this).parent().parent().data("sid"),
-				'hour': $(this).val()
-			},
-			dataType: 'json',
-			success: function (data) {
-				
-				if(data['error'])
-					alert(data['error']);	
-			}
-		});
+		editDeparture($(this).parent().parent().data("sid"))
 	});
 	
 	
@@ -217,6 +222,29 @@ $(document).ready(function() {
 		$('.button_in_departure').each(function() {
 			$(this).click();
 		});
+	});
+	
+		
+	$('#submit_date_day').click(function(event) {
+		$.ajax({
+			headers: { "X-CSRFToken": csrf}, 
+			type: 'POST',
+			url: url_children_here_day,
+			data: {
+				'day': $("#input_date_day").val()
+			},
+			dataType: 'html',
+			success: function (data) {
+				
+				if(data['error'])
+					alert(data['error']);	
+				else {
+				
+					$("#childrenModal").html(data);
+					$("#childrenModal").modal('toggle');
+				}
+			}
+		});	
 	});
 	
 });
