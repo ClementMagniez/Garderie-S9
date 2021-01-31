@@ -34,7 +34,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
 		'garderie.apps.GarderieConfig',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -106,6 +105,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+ADMIN_ENABLED=False
+ACCOUNT_UNIQUE_EMAIL=True
+ACCOUNT_EMAIL_REQUIRED=True
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -128,7 +130,7 @@ CSRF_COOKIE_SECURE=False
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-ADMIN_ENABLED=False
+
 
 # Login infos
 LOGIN_REDIRECT_URL='/index-redirect/'

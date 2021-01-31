@@ -6,11 +6,49 @@
 {% load static %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.0/jspdf.umd.min.js"></script>
+<script src="{% static 'garderie/js/html2canvas.min.js' %}"></script>
 <script>
 
 	let csrf='{{ csrf_token}}';
 	let url_get_bill_modal='{% url 'ajax_show_bill_modal' %}';
 	let url_swap_bills_display='{% url 'ajax_swap_bills_display' %}';
+
+
+    function demoFromHTML() {
+
+        let pdf = new jspdf.jsPDF('p', 'pt', 'letter');
+        // source can be HTML-formatted string, or a reference
+        // to an actual DOM element from which the text will be scraped.
+        source = $('.download-as-PDF')[0];
+
+        // we support special element handlers. Register them with jQuery-style 
+        // ID selector for either ID or node name. ("#iAmID", "div", "span" etc.)
+        // There is no support for any other type of selectors 
+        // (class, of compound) at this time.
+        specialElementHandlers = {
+            // element with id of "bypass" - jQuery style selector
+            '#bypassme': function (element, renderer) {
+                // true = "handled elsewhere, bypass text extraction"
+                return true
+            }
+        };
+        margins = {
+            top: 80,
+            bottom: 60,
+            left: 40,
+            width: 522
+        };
+        pdf.html(
+            source, 
+            margins.left,
+            {
+            
+		          callback: function(pdf) {
+		          	pdf.save();
+		          }
+	          });
+    }
 
 </script>
 

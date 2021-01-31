@@ -165,7 +165,10 @@ def AjaxShowChildrenHereThisDay(request):
 def AjaxShowBills(request):
 	date=request.POST.get('date', None)
 	query=request.POST.get('query', None)
-	date=datetime.strptime(date, '%Y-%m').date()
+	try:
+		date=datetime.strptime(date, '%Y-%m').date()
+	except ValueError:
+		date=timezone.now().date()
 	month=date.month
 	year=date.year
 	
