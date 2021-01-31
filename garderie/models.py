@@ -30,8 +30,15 @@ class User(AbstractBaseUser, PermissionsMixin):
 	def email_user(self, subject, message, from_email=None, **kwargs):
 		send_mail(subject, message, from_email, [self.email], **kwargs)
 
-	
-	
+	def delete(self, using=None, keep_parents=False):
+		try:
+			self.parent.delete()
+		except:
+			pass # pas de parent, rien à supprimer
+		super().delete(using, keep_parents)
+		
+
+		
 
 class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
@@ -41,9 +48,24 @@ class Parent(models.Model):
 	def __str__(self):
 		return str(self.uid.get_full_name())
 			
-	def fullname(self):
+	def get_full_name(self):
 		return str(self)			
 
+
+	# Un Child n'est pas automatiquement supprimé quand on détruit un Parent, 
+	# car il peut en avoir un autre ; on vérifie donc à la main
+	# Le cas échéant, ce deuxième parent devient le premier, sinon l'enfant est supprimé
+	def delete(self, using=None, keep_parents=False):
+		for child in self.child_set.all():
+			print(child)
+			if child.second_parent!=None:
+				child.parent=child.second_parent
+				child.second_parent=None
+				child.save()
+			else:
+				child.delete()
+		super().delete(using, keep_parents)
+		
 
 	# Queryset fusionnant child_set et child_set2 TODO les fusionner automatiquement ?
 	def all_children(self):
@@ -61,7 +83,7 @@ class Child(models.Model):
 		
 	### Méthodes de manipulation du modèle
 
-	def fullname(self):
+	def get_full_name(self):
 		return str(self)	
 
 	# Renvoie un schedule incomplet (departure==None) de l'enfant ou None
@@ -286,7 +308,7 @@ class ReliablePerson(models.Model):
 	def __str__(self):
 		return self.first_name+" "+self.last_name
 
-	def fullname(self):
+	def get_full_name(self):
 		return str(self)	
 
 	

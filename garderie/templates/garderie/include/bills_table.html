@@ -11,7 +11,7 @@
 	{% for bill in bills_list %}
 	<tr>
 		<td>
-			<a href="{% url 'parent_profile' bill.child.parent.uid_id %}">{{ bill.child.parent.fullname }}</a>
+			<a href="{% url 'parent_profile' bill.child.parent.uid_id %}">{{ bill.child.parent.get_full_name }}</a>
 		</td>
 		<td>
 			<a href="{% url 'child_profile' bill.child.id %}">{{ bill.child.first_name }}</a>

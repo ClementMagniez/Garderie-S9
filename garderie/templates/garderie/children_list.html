@@ -151,7 +151,7 @@
 			<tr class="child_out" data-cid="{{child.id}}">
 				<td>
 					<a href="{% url 'child_profile' child.id %}">
-							{{child.fullname}}
+							{{child.get_full_name}}
 					</a>
 				</td> 
 				<td> {% if child.present_next_time %} 
@@ -164,7 +164,7 @@
 				</td>				
 				{% if user.is_superuser %}
 					<td> 
-						<form method="POST" action="{% url 'child_delete' child.id  %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{child.fullname}}' + ' ?');">
+						<form method="POST" action="{% url 'child_delete' child.id  %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{child.get_full_name}}' + ' ?');">
 			 				{% csrf_token %}
 				 				<input type="submit" value="X" class="btn btn-danger btn-sm"></input>
 							</form>

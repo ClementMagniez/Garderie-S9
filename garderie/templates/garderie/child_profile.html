@@ -44,11 +44,11 @@
 <div class="d-flex justify-content-center pt-3">
  <div class="bg-light p-4 border border-secondary rounded">
 
-<h1>{{ child.fullname}}</h1>
+<h1>{{ child.get_full_name}}</h1>
 <p>Parents : <br/>
-	<a href="{% url 'parent_profile' child.parent.uid_id %}">  {{child.parent.fullname}}</a><br/>
+	<a href="{% url 'parent_profile' child.parent.uid_id %}">  {{child.parent.get_full_name}}</a><br/>
 	{% if child.second_parent %}
-	<a href="{% url 'parent_profile' child.second_parent.uid_id %}">  {{child.second_parent.fullname}}</a>
+	<a href="{% url 'parent_profile' child.second_parent.uid_id %}">  {{child.second_parent.get_full_name}}</a>
 	{% endif %}
 </p>
 

@@ -32,6 +32,21 @@ class NewUserForm(forms.ModelForm):
 																	self.data.get('mail'))
 		return new_parent
 		
+
+# Crée un nouvel utilisateur avec is_staff=True
+class NewStaffForm(forms.ModelForm):
+	is_superuser=forms.BooleanField(label="Administrateur", help_text='Détermine si l\'utilisateur est un employé ou un administrateur.', required=False)
+	class Meta:
+		model=User
+		fields=['email', 'password', 'first_name', 'last_name','is_superuser']
+
+	def save(self, commit=True):
+		user=super().save(commit=False)
+		if commit:
+			user.is_staff=True
+			user.save()
+		return user
+
 # Formulaire de modification d'un parent 
 class ParentUpdateForm(forms.ModelForm):
 # TODO : inverse complètement le raisonnement avec NewUserForm, qui prend

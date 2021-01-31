@@ -57,7 +57,7 @@
 {% if user.is_authenticated and user.id == parent.uid_id or user.is_superuser %}
 <div class="d-flex justify-content-center pt-3">
  <div class="bg-light p-4 border border-secondary rounded">
-	<h1>{{ parent.fullname}}</h1>
+	<h1>{{ parent.get_full_name}}</h1>
 	<h2>Informations personnelles</h2>
 	<form action="{% url 'parent_update' parent.uid_id  %}" method="post" class="pt-3">
 		{% csrf_token %}
@@ -82,11 +82,11 @@
 		<tr>
 			<td>
 				<a href={% url 'child_profile' child.id %}>
-					{{child.fullname}}
+					{{child.get_full_name}}
 				</a> 
 			</td>
 			<td>
-				<form method="POST" action="{% url 'child_delete' child.id  %}?next={{request.path}}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{child.fullname}}' + ' ?');">
+				<form method="POST" action="{% url 'child_delete' child.id  %}?next={{request.path}}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{child.get_full_name}}' + ' ?');">
 	 				{% csrf_token %}
 	 				<input type="submit" value="X" class="btn btn-danger btn-sm">
 				</form>
@@ -112,9 +112,9 @@
 		{% for person in child.reliableperson_set.all %}
 			<tr>
 				<td>{{child.first_name}}</td>
-				<td>{{person.fullname}}</td>
+				<td>{{person.get_full_name}}</td>
 				<td>
-				<form method="POST" action="{% url 'reliable_person_delete' person.id %}?next={{request.path}}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{person.fullname}}' + ' ?');">
+				<form method="POST" action="{% url 'reliable_person_delete' person.id %}?next={{request.path}}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{person.get_full_name}}' + ' ?');">
 		 				{% csrf_token %}
 		 				<input type="submit" value="X" class="btn btn-danger btn-sm">
 					</form>
@@ -141,7 +141,7 @@
 			{% if bill %}
 			<tr>
 				<td>
-						{{child.fullname}}
+						{{child.get_full_name}}
 				</td>
 				<td>
 					{{bill.month|stringformat:'02d'}}/{{bill.year}}

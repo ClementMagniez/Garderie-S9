@@ -20,7 +20,7 @@
 					<tbody>
 						{% for bill in bills_list %}
 							<tr>
-								<td><a href={% url 'child_profile' bill.child.id %}>{{bill.child.fullname}}</a></td>
+								<td><a href={% url 'child_profile' bill.child.id %}>{{bill.child.get_full_name}}</a></td>
 								<td>{{bill.schedule_set.count}}</td>
 								<td>{{bill.amount}}€</td>
 							</tr>

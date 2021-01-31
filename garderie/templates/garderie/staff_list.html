@@ -1,6 +1,6 @@
 {% extends 'garderie/base.html' %}
 
-{% block title %}Liste des parents{% endblock %}
+{% block title %}Liste des employés{% endblock %}
 
 {% block scripts %}
 <script type="text/javascript">
@@ -10,7 +10,7 @@
 			    		paging: false,
 			    		"order": [[ 0, "asc" ]],
 			    		"language": {
-						    "emptyTable": "Aucun parent n'est enregistré",
+						    "emptyTable": "Aucun employé n'est enregistré",
 						    "search":         "Rechercher :",
 						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
     						"infoEmpty":      "Données 0 à 0 sur 0 entrée",
@@ -38,24 +38,16 @@
 	{% if user.is_authenticated %}
 	<table id="parent_tab" class="display table-bordered">
 		<thead>
-			<th>Parent</th>
-			<th>Enfants à charge</th>
-			<th>Option</th>
+			<th>Employé</th>
+			<th>Email</th>
+			<th>Options</th>
 		</thead>
-		{% for parent in parent_list %}
+		{% for acc in user_list %}
 		<tr>
-			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.get_full_name }}</a></td>
-				<td>
-				{% for child in parent.all_children %} 
-					{% if forloop.counter > 1 %}
-					<br>
-					{% endif %}
-					<a href="{% url 'child_profile' child.id %}">{{ child.first_name }}</a>
-				{% endfor %}
-				</td>
+			<td> {{acc.get_full_name}}</td>
+			<td> {{acc.email}}</td>
 			<td> 
-
-				<form method="POST" action="{% url 'user_delete' parent.uid_id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{ parent.get_full_name }}' + ' ?');">
+				<form method="POST" action="{% url 'user_delete' acc.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{ acc.get_full_name }}' + ' ?');">
    				{% csrf_token %}<input class="btn btn-danger btn-sm" type="submit" value="SUPPRIMER">
 				</form>
 			</td>
@@ -63,7 +55,7 @@
 		{% endfor %}
 	</table>
 	{% else %}
-		<p>Connectez-vous pour voir la liste des enfants</p>
+		<p>Connectez-vous pour voir la liste des employés"</p>
 	{% endif %}
 </div>
 {% endblock %}

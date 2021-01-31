@@ -5,8 +5,11 @@ from . import views
 url_admin=[
         path('admin/tauxhoraire/',  permission_required('is_superuser')(views.NewHourlyRateView.as_view()), name='hourly_rate_form'),
         path('admin/factures',  permission_required('is_superuser')(views.BillsListView.as_view()), name='bills_list'),
+        path('admin/staff/add/',  permission_required('is_superuser')(views.NewStaffView.as_view()), name='add_staff'),
+        path('admin/staff/', permission_required('is_superuser')(views.StaffListView.as_view()), name='staff_list'),
         path('parent/', permission_required('is_superuser')(views.ParentListView.as_view()), name='parent_list'),
         path('parent/add/', permission_required('is_superuser')(views.NewUserView.as_view()), name='add_parent'),
+        path('admin/user/<int:pk>/delete/',  permission_required('is_superuser')(views.UserDeleteView.as_view()), name='user_delete'),
 
 ]
 url_parent=[
@@ -15,7 +18,6 @@ url_parent=[
         path('parent/<int:pk>/create_child/', views.ParentCreateChildView.as_view(), name='parent_create_child'),
         path('parent/<int:pk>/create_reliable/', views.CreateReliableView.as_view(), name='parent_create_reliable'),
         path('parent/<int:pk>/update/', views.ParentUpdateView.as_view(), name='parent_update'),
-        path('parent/<int:pk>/delete/',  permission_required('is_superuser')(views.ParentDeleteView.as_view()), name='parent_delete'),
         path('parent/<int:pk>/delete_reliable/', views.ParentDeleteReliableView.as_view(), name='reliable_person_delete'),
 ]
 

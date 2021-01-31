@@ -63,19 +63,6 @@ class ParentCreateChildView(LoginRequiredMixin, UserPassesTestMixin, EmbeddedCre
 		return reverse('parent_profile', args=[self.kwargs['pk']])
 			
 
-# Formulaire de suppression d'un parent (et de l'utilisateur associé)
-class ParentDeleteView(generic.edit.DeleteView):
-	template_name='garderie/parent_profile.html'
-	model = Parent
-	success_url = reverse_lazy('parent_list')
-
-	def delete(self, request, *args, **kwargs):
-		self.object=self.get_object()
-		print(User.objects.all())
-		User.objects.filter(id=self.object.uid_id).delete()
-		self.object.delete()
-		return HttpResponseRedirect(self.success_url)
-
 # Formulaire de suppression d'une personne de confiance
 class ParentDeleteReliableView(generic.edit.DeleteView):
 	model = ReliablePerson
