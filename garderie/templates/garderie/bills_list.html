@@ -10,7 +10,7 @@
 
 	let csrf='{{ csrf_token}}';
 	let url_get_bill_modal='{% url 'ajax_show_bill_modal' %}';
-	let url_swap_bills_display='{% url 'ajax_swap_bills_display'%}';
+	let url_swap_bills_display='{% url 'ajax_swap_bills_display' %}';
 
 </script>
 
@@ -24,9 +24,8 @@
 
 <input id="swap_bills_input" type="month">
 <button id="swap_bills_display">Voir</button>
+<button id="show_bills_recap">Afficher un récapitulatif du mois</button>
 </div>
-
-
 
 <div class="modal hide fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 </div>

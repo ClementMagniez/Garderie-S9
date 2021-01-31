@@ -162,16 +162,18 @@ def AjaxShowChildrenHereThisDay(request):
 	return render(request, 'garderie/include/children_list_modal.html', context)
 
 
-def AjaxShowBillsThisMonth(request):
+def AjaxShowBills(request):
 	date=request.POST.get('date', None)
+	query=request.POST.get('query', None)
 	date=datetime.strptime(date, '%Y-%m').date()
 	month=date.month
 	year=date.year
 	
-	bills=[b for b in Bill.objects.filter(month=month, year=year)]
-	
+
+	if query=='table':
+		template='garderie/include/bills_table.html'
+	elif query=='recap':
+		template='garderie/include/bills_list_modal.html'
+	bills=[b for b in Bill.objects.filter(month=month, year=year).order_by('child__last_name')]
 	context={'bills_list':bills}
-	
-	return render(request, 'garderie/include/bills_table.html', context)
-
-
+	return render(request, template, context)

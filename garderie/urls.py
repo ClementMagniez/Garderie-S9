@@ -40,7 +40,7 @@ url_ajax=[
         path('ajax/show_bill_modal/',  views.AjaxShowBillModal, name='ajax_show_bill_modal'),
         path('ajax/show_schedule_form_modal/',  views.AjaxShowScheduleFormModal, name='ajax_show_schedule_form_modal'),
         path('ajax/children_here/',  views.AjaxShowChildrenHereThisDay, name='ajax_children_here_day'),
-        path('ajax/swap_bills_display/',  views.AjaxShowBillsThisMonth, name='ajax_swap_bills_display'),
+        path('ajax/swap_bills/',  views.AjaxShowBills, name='ajax_swap_bills_display'),
 ]
 
 
