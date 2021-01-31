@@ -1,7 +1,6 @@
 from django.test import TestCase
 
 from garderie.models import *
-from django.contrib.auth.models import User
 from datetime import datetime
 
 from django.utils import timezone
@@ -10,11 +9,11 @@ from garderie.utils import *
 class BillTests(TestCase):
 	# Crée un parent, un HourlyRate et un enfant auxquels on peut rattacher cinq Schedules
 	def setUp(self):
-		user=User.objects.create_user(username='test',
-																		first_name='test',
-																		last_name='test',
-																		password='test',
-																		email='test@test.test')
+		user=User.objects.create_user(
+																	first_name='test',
+																	last_name='test',
+																	password='test',
+																	email='test@test.test')
 
 		parent=Parent(uid=user, phone="16518612")
 		parent.save()

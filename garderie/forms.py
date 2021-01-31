@@ -1,6 +1,6 @@
 from django import forms
-from .models import Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence
-from django.contrib.auth.models import User
+from .models import User, Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence
+
 from django.template import Context
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -43,10 +43,7 @@ class ParentUpdateForm(forms.ModelForm):
 
 	class Meta:
 		model=User
-		fields=['username', 'first_name', 'last_name', 'email']
-		help_texts = { # TODO temporaire pour masquer l'aide par défaut, mais à compléter
-				'username': None,
-		}
+		fields=['first_name', 'last_name', 'email']
 
 	def save(self, commit=True):
 		updated_user=super().save(commit=False)

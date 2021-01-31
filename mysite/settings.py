@@ -106,9 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 ADMIN_ENABLED=False
-ACCOUNT_UNIQUE_EMAIL=True
-ACCOUNT_EMAIL_REQUIRED=True
-
+AUTH_USER_MODEL="garderie.User"
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 

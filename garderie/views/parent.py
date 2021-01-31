@@ -1,7 +1,6 @@
 from django.views import generic
-from ..models import Child, Parent, ReliablePerson
+from ..models import User, Child, Parent, ReliablePerson
 from ..forms import ParentUpdateForm, NewReliableForm, NewChildFormParent
-from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -72,6 +71,7 @@ class ParentDeleteView(generic.edit.DeleteView):
 
 	def delete(self, request, *args, **kwargs):
 		self.object=self.get_object()
+		print(User.objects.all())
 		User.objects.filter(id=self.object.uid_id).delete()
 		self.object.delete()
 		return HttpResponseRedirect(self.success_url)

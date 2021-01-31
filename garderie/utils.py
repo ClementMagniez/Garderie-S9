@@ -1,7 +1,5 @@
-import garderie.models
+from garderie import models
 from django.utils import timezone
-from django.contrib.auth.models import User
-
 from django.template.loader import get_template
 from django.core.mail import send_mail
 
@@ -75,13 +73,11 @@ def is_parent_permitted(view):
 		
 def create_parent_and_send_mail(new_parent, first_name, last_name, mail):
 #	if settings.DEBUG:
-#		random_username='test'
 #		random_password='test'
 #	else:
-	random_username=''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(6))
-	random_password= User.objects.make_random_password()			
+	random_password=models.User.objects.make_random_password()			
 
-	user=User.objects.create_user(username=random_username,
+	user=models.User.objects.create_user(
 																first_name=first_name,
 																last_name=last_name,
 																password=random_password,
@@ -91,7 +87,7 @@ def create_parent_and_send_mail(new_parent, first_name, last_name, mail):
 	new_parent.save()
 
 	raw_data=get_template('garderie/email_welcome.txt')
-	data_context=({'id':random_username, 'pw':random_password})
+	data_context=({'id':mail, 'pw':random_password})
 	text_data=raw_data.render(data_context)
 
 	send_mail("Bienvenue sur Garderie++", text_data, 'a@b.com', [user.email])

@@ -1,27 +1,37 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.utils.translation import ugettext
 from datetime import datetime, timedelta, date, time
+from .managers import UserManager, ScheduleManager
 from math import ceil, floor
 import garderie.utils 
 
 	
-# Managers
+class User(AbstractBaseUser, PermissionsMixin):
+	email = models.EmailField('Adresse mail', unique=True)
+	first_name = models.CharField('Prénom', max_length=30, blank=True)
+	last_name = models.CharField('Nom', max_length=30, blank=True)
+	date_joined = models.DateTimeField('Date de création', auto_now_add=True)
+	is_active = models.BooleanField('Actif', default=True)
+	is_staff=models.BooleanField('Membre de l\'équipe', default=False)
 
-class ScheduleManager(models.Manager):
+	USERNAME_FIELD='email'
+	REQUIRED_FIELDS=[]
+	objects=UserManager()
+	
+	def get_full_name(self):
+		return self.first_name+' '+self.last_name
 
-	# Schedules incomplets, sans départ encore déterminé
-	def incomplete_schedules(self):
-		return super().get_queryset().filter(departure=None)
+	def get_short_name(self):
+		return self.first_name
 
-	# Schedules ayant commencé il y a moins de 30 jours		
-	def recent_schedules(self):
-		return super().get_queryset().filter(arrival__gte=datetime.today()-timedelta(days=30))
+	def email_user(self, subject, message, from_email=None, **kwargs):
+		send_mail(subject, message, from_email, [self.email], **kwargs)
 
-
-
-### Modèles
+	
+	
 
 class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
@@ -29,7 +39,7 @@ class Parent(models.Model):
 
 
 	def __str__(self):
-		return self.uid.first_name+" "+self.uid.last_name
+		return str(self.uid.get_full_name())
 			
 	def fullname(self):
 		return str(self)			
