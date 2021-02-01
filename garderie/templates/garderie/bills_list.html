@@ -7,13 +7,13 @@
 
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.0/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@3.5.13/dist/jspdf.plugin.autotable.js"></script>
 <script src="{% static 'garderie/js/html2canvas.min.js' %}"></script>
 <script>
 
 	let csrf='{{ csrf_token}}';
 	let url_get_bill_modal='{% url 'ajax_show_bill_modal' %}';
 	let url_swap_bills_display='{% url 'ajax_swap_bills_display' %}';
-
 
     function demoFromHTML() {
 
@@ -39,6 +39,11 @@
             left: 40,
             width: 522
         };
+
+        pdf.autoTable({html:"#pdf_table"});
+        pdf.save();
+
+	/*
         pdf.html(
             source, 
             
@@ -48,7 +53,9 @@
 		          	pdf.save();
 		          }
 	          });
+	*/
     }
+
 
 </script>
 
@@ -58,11 +65,15 @@
 
 {% block body %}
 <div class="container pt-1">
-<span>Afficher les factures de :</span>
+	<span>Afficher les factures de :</span>
 
-<input id="swap_bills_input" type="month">
-<button id="swap_bills_display">Voir</button>
-<button id="show_bills_recap">Afficher un récapitulatif du mois</button>
+	<br>
+	      
+	<input type="text" id="swap_bills_input">
+
+	<!-- <input id="swap_bills_input" type="month"> -->
+	<button id="swap_bills_display" class="btn btn-primary btn-sm" >Voir</button>
+	<button id="show_bills_recap" class="btn btn-secondary btn-sm" >Afficher un récapitulatif du mois</button>
 </div>
 
 <div class="modal hide fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

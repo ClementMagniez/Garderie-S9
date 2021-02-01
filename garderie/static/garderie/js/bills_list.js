@@ -84,5 +84,18 @@ $(document).ready(function() {
 
 	});
 
+	//$('#datepickerFact').val("").datepicker("update");
+
 
 });
+
+$('#swap_bills_input').datepicker({
+            format: "mm/yyyy",
+		    startView: 1,
+		    minViewMode: 1,
+		    maxViewMode: 2,
+		    language: "fr",
+		    calendarWeeks: true,
+		    autoclose: true,
+		    clearBtn: true,
+    });
