@@ -8,25 +8,13 @@
       </div>
       <div class="modal-body border border-secondary">
       	<!-- Bloc en-tête info -->
+        <h4>{{ schedule.child.last_name}} {{schedule.child.first_name}}</h4>
         <div class="d-flex justify-content-between">
         	<!-- Bloc info des parents -->
         	<div class="container">
-			  	<div class="row">
-			    	<div class="col">
-			    		{{ schedule.child.last_name}}
-			    	</div>
-				</div>
-				<div class="row">
-			    	<div class="col">
-			    		{{schedule.child.first_name}}
-			    	</div>
-				</div>
-			</div>
-
-      <div class="container">
-			{% include 'garderie/forms/embedded_form.html' with form=form action=action %}				
-			</div>
-
+            {% include 'garderie/forms/embedded_form.html' with form=form action=action %}        
+          </div>
+			  </div>
       </div>
       
       <div class="modal-footer">
