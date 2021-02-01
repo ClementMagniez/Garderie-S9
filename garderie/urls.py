@@ -10,6 +10,7 @@ url_admin=[
         path('parent/', permission_required('is_superuser')(views.ParentListView.as_view()), name='parent_list'),
         path('parent/add/', permission_required('is_superuser')(views.NewUserView.as_view()), name='add_parent'),
         path('admin/user/<int:pk>/delete/',  permission_required('is_superuser')(views.UserDeleteView.as_view()), name='user_delete'),
+        path('admin/password-reset/',  permission_required('is_superuser')(views.ResetPasswordView.as_view()), name='password_reset_form'),
 
 ]
 url_parent=[

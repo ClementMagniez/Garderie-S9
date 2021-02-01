@@ -47,6 +47,13 @@ class NewStaffForm(forms.ModelForm):
 			user.save()
 		return user
 
+
+# Choisit un utilisateur dans un menu déroulant
+class ResetPasswordForm(forms.Form):
+	user=forms.ModelChoiceField(queryset=User.objects.all(), label="Utilisateur")
+
+
+
 # Formulaire de modification d'un parent 
 class ParentUpdateForm(forms.ModelForm):
 # TODO : inverse complètement le raisonnement avec NewUserForm, qui prend

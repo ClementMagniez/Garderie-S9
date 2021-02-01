@@ -12,8 +12,8 @@ from django.views.generic.edit import CreateView, UpdateView
 
 ### Recense les fonctions et classes utilitaires utilisées par d'autres fichiers de l'app
 
-# Classe générique pour les formulaires intégrés à une autre view : retournent leurs erreurs
-# sous forme JSon et retiennent la pk de la view principale
+# Classe générique pour les formulaires intégrés à une autre view : retourne leurs erreurs
+# sous forme JSon et retient la pk de la view principale
 class EmbeddedCreateView(CreateView):
 	template_name='garderie/forms/base_form.html' # inutile en pratique, embedded_form.js intercepte
 
@@ -65,16 +65,11 @@ def get_datetime_from_hhmm(hhmm):
 	return timezone.make_aware(datetime.today().replace(hour=int(new_hhmm[0]), minute=int(new_hhmm[1])))
 	
 	
-	
 def is_parent_permitted(view):
 		return view.request.user.id==view.kwargs['pk'] or view.request.user.is_superuser
 	
-	
 		
 def create_parent_and_send_mail(new_parent, first_name, last_name, mail):
-#	if settings.DEBUG:
-#		random_password='test'
-#	else:
 	random_password=models.User.objects.make_random_password()			
 
 	user=models.User.objects.create_user(
@@ -86,9 +81,21 @@ def create_parent_and_send_mail(new_parent, first_name, last_name, mail):
 	new_parent.uid_id=user.id
 	new_parent.save()
 
-	raw_data=get_template('garderie/email_welcome.txt')
 	data_context=({'id':mail, 'pw':random_password})
-	text_data=raw_data.render(data_context)
 
-	send_mail("Bienvenue sur Garderie++", text_data, 'a@b.com', [user.email])
+	send_mail_to_user(user.email, "Bienvenue sur Garderie++", 'garderie/email_welcome.txt', data_context)
 	return new_parent
+	
+def send_mail_to_user(mail, subject, template, data):
+	raw_data=get_template(template)
+	text_data=raw_data.render(data)
+	send_mail(subject, text_data, 'a@b.com', [mail])
+	
+
+
+def reset_password_send_mail(user):
+	new_password=models.User.objects.make_random_password()
+	user.set_password(new_password)
+	user.save()
+	data_context={'password':new_password}
+	send_mail_to_user(user.email, "Votre nouveau mot de passe", 'garderie/email_reset_password.txt', data_context)

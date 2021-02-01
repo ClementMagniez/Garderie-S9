@@ -172,7 +172,6 @@ def AjaxShowBills(request):
 	month=date.month
 	year=date.year
 	
-
 	if query=='table':
 		template='garderie/include/bills_table.html'
 	elif query=='recap':
@@ -180,3 +179,6 @@ def AjaxShowBills(request):
 	bills=[b for b in Bill.objects.filter(month=month, year=year).order_by('child__last_name')]
 	context={'bills_list':bills}
 	return render(request, template, context)
+	
+	
+

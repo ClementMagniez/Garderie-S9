@@ -1,8 +1,8 @@
 from django.views import generic
-from ..forms import NewHourlyRateForm, NewUserForm, NewStaffForm
+from ..forms import NewHourlyRateForm, NewUserForm, NewStaffForm, ResetPasswordForm
 from ..models import Bill, HourlyRate, Parent, User
 from django.urls import reverse_lazy
-
+from ..utils import reset_password_send_mail
 # Contient les views concernant l'administrateur du site
 
 
@@ -52,6 +52,20 @@ class UserDeleteView(generic.edit.DeleteView):
 		return HttpResponseRedirect(self.success_url)
 	
 
+class ResetPasswordView(generic.edit.FormView):
+	template_name="garderie/forms/reset_password.html"
+	form_class=ResetPasswordForm
+	success_url=reverse_lazy('admin_index')
+
+
+	def form_valid(self, form):
+		user=form.cleaned_data['user']
+#		if not user:
+#			return JsonResponse({'error':'Aucun utilisateur n\'a été sélectionné.'})
+	
+		reset_password_send_mail(user)
+		
+		return super().form_valid(form)
 
 # Formulaire de création d'un nouveau parent
 class NewStaffView(generic.edit.CreateView):
