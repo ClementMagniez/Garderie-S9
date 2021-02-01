@@ -174,7 +174,7 @@ def AjaxShowBills(request):
 	date=request.POST.get('date', None)
 	query=request.POST.get('query', None)
 	try:
-		date=datetime.strptime(date, '%Y-%m').date()
+		date=datetime.strptime(date, '%m/%Y').date()
 	except ValueError:
 		date=timezone.now().date()
 	month=date.month
