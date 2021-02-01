@@ -3,14 +3,14 @@ from django.contrib.auth.decorators import permission_required
 from . import views
 
 url_admin=[
-        path('admin/tauxhoraire/',  permission_required('is_superuser')(views.NewHourlyRateView.as_view()), name='hourly_rate_form'),
-        path('admin/factures',  permission_required('is_superuser')(views.BillsListView.as_view()), name='bills_list'),
-        path('admin/staff/add/',  permission_required('is_superuser')(views.NewStaffView.as_view()), name='add_staff'),
-        path('admin/staff/', permission_required('is_superuser')(views.StaffListView.as_view()), name='staff_list'),
-        path('parent/', permission_required('is_superuser')(views.ParentListView.as_view()), name='parent_list'),
-        path('parent/add/', permission_required('is_superuser')(views.NewUserView.as_view()), name='add_parent'),
-        path('admin/user/<int:pk>/delete/',  permission_required('is_superuser')(views.UserDeleteView.as_view()), name='user_delete'),
-        path('admin/password-reset/',  permission_required('is_superuser')(views.ResetPasswordView.as_view()), name='password_reset_form'),
+        path('admin/tauxhoraire/',  (views.NewHourlyRateView.as_view()), name='hourly_rate_form'),
+        path('admin/factures',  (views.BillsListView.as_view()), name='bills_list'),
+        path('admin/staff/add/',  (views.NewStaffView.as_view()), name='add_staff'),
+        path('admin/staff/', (views.StaffListView.as_view()), name='staff_list'),
+        path('parent/', (views.ParentListView.as_view()), name='parent_list'),
+        path('parent/add/', (views.NewUserView.as_view()), name='add_parent'),
+        path('admin/user/<int:pk>/delete/',  (views.UserDeleteView.as_view()), name='user_delete'),
+        path('admin/password-reset/',  (views.ResetPasswordView.as_view()), name='password_reset_form'),
 
 ]
 url_parent=[
@@ -35,11 +35,11 @@ url_enfant=[
 ]
 
 url_ajax=[
-        path('ajax/enter_hour_arrival/',  permission_required('is_staff')(views.AjaxChildCreateArrival), name='ajax_arrival'),
-        path('ajax/enter_hour_departure/',  permission_required('is_staff')(views.AjaxChildCreateDeparture), name='ajax_departure'),
-        path('ajax/edit_hour_arrival/',  permission_required('is_staff')(views.AjaxChildEditArrival), name='ajax_edit_arrival'),
-        path('ajax/edit_hour_departure/',  permission_required('is_staff')(views.AjaxChildEditDeparture), name='ajax_edit_departure'),
-        path('ajax/remove_arrival/',  permission_required('is_staff')(views.AjaxChildRemoveArrival), name='ajax_remove_arrival'),
+        path('ajax/enter_hour_arrival/',  views.AjaxChildCreateArrival, name='ajax_arrival'),
+        path('ajax/enter_hour_departure/',  views.AjaxChildCreateDeparture, name='ajax_departure'),
+        path('ajax/edit_hour_arrival/',  views.AjaxChildEditArrival, name='ajax_edit_arrival'),
+        path('ajax/edit_hour_departure/',  views.AjaxChildEditDeparture, name='ajax_edit_departure'),
+        path('ajax/remove_arrival/',  views.AjaxChildRemoveArrival, name='ajax_remove_arrival'),
         path('ajax/show_bill_modal/',  views.AjaxShowBillModal, name='ajax_show_bill_modal'),
         path('ajax/show_schedule_form_modal/',  views.AjaxShowScheduleFormModal, name='ajax_show_schedule_form_modal'),
         path('ajax/children_here/',  views.AjaxShowChildrenHereThisDay, name='ajax_children_here_day'),

@@ -6,6 +6,7 @@ from django.utils.translation import ugettext
 from datetime import datetime, timedelta, date, time
 from .managers import UserManager, ScheduleManager
 from math import ceil, floor
+from phonenumber_field.modelfields import PhoneNumberField
 import garderie.utils 
 
 	
@@ -45,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
-	phone=models.CharField(max_length=20, null=True, verbose_name="Téléphone")
+	phone=PhoneNumberField(max_length=20, null=True, verbose_name="Téléphone")
 
 
 	def __str__(self):
@@ -305,7 +306,7 @@ class ReliablePerson(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name='Enfant concerné')
 	first_name=models.CharField(max_length=100, verbose_name="Prénom")
 	last_name=models.CharField(max_length=100, verbose_name="Nom")
-	phone=models.CharField(max_length=20, null=True, verbose_name="Téléphone") 		
+	phone=PhoneNumberField(max_length=20, null=True, verbose_name="Téléphone") 		
 
 
 	def __str__(self):

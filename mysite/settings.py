@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
 		'garderie.apps.GarderieConfig',
     'django.contrib.auth',
+    'phonenumber_field',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',

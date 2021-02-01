@@ -5,14 +5,17 @@ from django.template import Context
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
-from .utils import create_parent_and_send_mail
+from .utils import create_parent_and_send_mail, send_mail_creation_account
+from phonenumber_field.formfields import PhoneNumberField
+
+
 
 # Formulaire de création d'un Parent
 # Sémantiqueemnt, on abuse un peu de ModelForm ici puisqu'on utilise un seul
 # field de Parent ; en réalité, on crée un User, qu'on wrap dans la création d'un Parent 
 # Concrètement, on économise les quelques lignes nécessaires à la création du Parent
 class NewUserForm(forms.ModelForm):
-	mail=forms.CharField(label="Adresse mail")
+	mail=forms.EmailField(label="Adresse mail")
 	first_name=forms.CharField(label="Prénom")
 	last_name=forms.CharField(label="Nom")
 
@@ -20,6 +23,11 @@ class NewUserForm(forms.ModelForm):
 		model = Parent
 		fields = [ 'phone']
 	
+	def clean_mail(self):
+		mail=self.cleaned_data['mail']
+		if mail in User.objects.all().values_list('email', flat=True):
+			raise ValidationError("Cette adresse mail est déjà utilisée.")
+		return mail
 	# Crée le nouvel utilisateur avec un mot de passe/login random, envoie un mail
 	# à l'adresse renseignée avec les identifiants générés et crée le Parent lié
 	# à cet User
@@ -38,11 +46,14 @@ class NewStaffForm(forms.ModelForm):
 	is_superuser=forms.BooleanField(label="Administrateur", help_text='Détermine si l\'utilisateur est un employé ou un administrateur.', required=False)
 	class Meta:
 		model=User
-		fields=['email', 'password', 'first_name', 'last_name','is_superuser']
+		fields=['email', 'first_name', 'last_name','is_superuser']
 
 	def save(self, commit=True):
 		user=super().save(commit=False)
 		if commit:
+			pw=User.objects.make_random_password()
+			user.set_password(pw)
+			send_mail_creation_account(user.email, pw)
 			user.is_staff=True
 			user.save()
 		return user
@@ -61,7 +72,7 @@ class ParentUpdateForm(forms.ModelForm):
 # et on ajoute User
 # c'est fonctionnellement sans grande importance, mais à corriger éventuellement
 
-	phone=forms.CharField(label="Téléphone")
+	phone=PhoneNumberField(label="Téléphone")
 
 	class Meta:
 		model=User
@@ -79,7 +90,7 @@ class ParentUpdateForm(forms.ModelForm):
 
 # Formulaire de création d'un enfant par un admin
 class NewChildFormAdmin(forms.ModelForm):
-	second_parent_mail=forms.CharField(label="Mail du deuxième parent (facultatif)", required=False)
+	second_parent_mail=forms.EmailField(label="Mail du deuxième parent (facultatif)", required=False)
 	
 	class Meta:
 		model = Child
@@ -118,7 +129,7 @@ class NewChildFormAdmin(forms.ModelForm):
 # Par rapport à NewChildFormAdmin, masque le champ "parent"
 # et le remplit automatiquement via l'utilisateur connecté
 class NewChildFormParent(forms.ModelForm):
-	second_parent_mail=forms.CharField(label="Mail du deuxième parent (facultatif)", required=False)
+	second_parent_mail=forms.EmailField(label="Mail du deuxième parent (facultatif)", required=False)
 	class Meta:
 		model = Child
 		fields = [ 'first_name', 'last_name']

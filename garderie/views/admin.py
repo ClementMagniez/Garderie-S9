@@ -3,10 +3,12 @@ from ..forms import NewHourlyRateForm, NewUserForm, NewStaffForm, ResetPasswordF
 from ..models import Bill, HourlyRate, Parent, User
 from django.urls import reverse_lazy
 from ..utils import reset_password_send_mail
+from django.contrib.auth import decorators
 # Contient les views concernant l'administrateur du site
 
 
 # Accueil / panneau de contrôle de l'admin - statique et entièrement défini par son HTML
+
 class AdminIndexView(generic.TemplateView):
 	template_name="garderie/admin_index.html"
 
@@ -67,13 +69,13 @@ class ResetPasswordView(generic.edit.FormView):
 		
 		return super().form_valid(form)
 
-# Formulaire de création d'un nouveau parent
+# Formulaire de création d'un nouvel employé
 class NewStaffView(generic.edit.CreateView):
 	template_name = 'garderie/forms/new_user.html'
 	form_class = NewStaffForm
 	success_url = reverse_lazy('admin_index')	
 
-# Liste des parents
+# Liste des employés
 class StaffListView(generic.ListView):
 	template_name="garderie/staff_list.html"
 	context_object_name='user_list'

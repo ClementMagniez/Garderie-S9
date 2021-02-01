@@ -50,10 +50,10 @@ class EmbeddedUpdateView(UpdateView):
 # s'il n'existe pas, le crée
 def get_or_create_bill(schedule):
 	try:
-		bill=garderie.models.Bill.objects.get(child=schedule.child,month=schedule.arrival.month, 
+		bill=models.Bill.objects.get(child=schedule.child,month=schedule.arrival.month, 
 													year=schedule.arrival.year)
 	except:
-		bill=garderie.models.Bill(child=schedule.child)
+		bill=models.Bill(child=schedule.child)
 		bill.save()
 	return bill	
 	
@@ -68,6 +68,19 @@ def get_datetime_from_hhmm(hhmm):
 def is_parent_permitted(view):
 		return view.request.user.id==view.kwargs['pk'] or view.request.user.is_superuser
 	
+	
+	
+### Création de compte et envoi de mails
+	
+def send_mail_creation_account(mail, random_password):
+	data_context=({'id':mail, 'pw':random_password})
+	send_mail_to_user(mail, "Bienvenue sur Garderie++", 'garderie/email_welcome.txt', data_context)
+	
+def send_mail_to_user(mail, subject, template, data):
+	raw_data=get_template(template)
+	text_data=raw_data.render(data)
+	send_mail(subject, text_data, 'a@b.com', [mail])
+
 		
 def create_parent_and_send_mail(new_parent, first_name, last_name, mail):
 	random_password=models.User.objects.make_random_password()			
@@ -80,17 +93,10 @@ def create_parent_and_send_mail(new_parent, first_name, last_name, mail):
 	user.save()
 	new_parent.uid_id=user.id
 	new_parent.save()
+	
+	send_mail_creation_account(mail, random_password)
 
-	data_context=({'id':mail, 'pw':random_password})
-
-	send_mail_to_user(user.email, "Bienvenue sur Garderie++", 'garderie/email_welcome.txt', data_context)
 	return new_parent
-	
-def send_mail_to_user(mail, subject, template, data):
-	raw_data=get_template(template)
-	text_data=raw_data.render(data)
-	send_mail(subject, text_data, 'a@b.com', [mail])
-	
 
 
 def reset_password_send_mail(user):

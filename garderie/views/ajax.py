@@ -6,9 +6,11 @@ from ..forms import EditScheduleForm
 from ..utils import get_datetime_from_hhmm
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth import decorators
 ### Contient les views répondant à une requête AJAX
 
 # Enregistre l'heure d'arrivée d'un enfant 
+@decorators.user_passes_test(lambda u: u.is_staff)
 def AjaxChildCreateArrival(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.filter(pk=child_id)[0]
@@ -39,6 +41,7 @@ def AjaxChildCreateArrival(request):
 	return JsonResponse(data)
 
 # Enregistre l'heure de départ d'un enfant
+@decorators.user_passes_test(lambda u: u.is_staff)
 def AjaxChildCreateDeparture(request):
 	child_id = request.POST.get('id', None)
 	child=Child.objects.get(pk=child_id)
@@ -63,6 +66,7 @@ def AjaxChildCreateDeparture(request):
 
 # Modifie l'heure de départ d'un schedule
 
+@decorators.user_passes_test(lambda u: u.is_staff)
 def AjaxChildEditDeparture(request):
 	schedule_id = request.POST.get('id', None)
 	schedule=Schedule.objects.filter(pk=schedule_id)[0]
@@ -90,6 +94,7 @@ def AjaxChildEditDeparture(request):
 	return JsonResponse(data)
 
 # Supprime un Schedule donné par 'id'
+@decorators.user_passes_test(lambda u: u.is_staff)
 def AjaxChildRemoveArrival(request):
 	schedule_id = request.POST.get('id', None)
 
@@ -108,6 +113,7 @@ def AjaxChildRemoveArrival(request):
 
 	
 # Modifie l'heure d'arrivée d'un schedule	
+@decorators.user_passes_test(lambda u: u.is_staff)
 def AjaxChildEditArrival(request):
 	schedule_id = request.POST.get('id', None)
 	
@@ -140,6 +146,7 @@ def AjaxShowBillModal(request):
 	return render(request, 'garderie/include/admin_bills_modal.html', context)
 
 
+@decorators.user_passes_test(lambda u: u.is_superuser)
 def AjaxShowScheduleFormModal(request):
 	schedule_id=request.POST.get('id', None)
 	schedule=Schedule.objects.get(pk=schedule_id)
@@ -148,6 +155,7 @@ def AjaxShowScheduleFormModal(request):
 					 'action':reverse('schedule_edit',  kwargs={'pk':schedule_id})}
 	return render(request, 'garderie/include/child_schedule_modal.html', context)
 
+@decorators.user_passes_test(lambda u: u.is_staff)
 def AjaxShowChildrenHereThisDay(request):
 	day=request.POST.get('day', None)
 	day=datetime.strptime(day, "%Y-%m-%d").date()

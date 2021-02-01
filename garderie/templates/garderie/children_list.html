@@ -46,7 +46,14 @@
 						    { className: 'auto-fit', targets: [2, 3] }
 						  ]
 		    		});
-
+		    		
+		    		
+	// Deux colonnes si l'utilisateur est staff, trois (pour supprimer)
+	// s'il est admin
+	tab2_columns=[null, null];
+	if({{user.is_superuser|lower}}) // True/False -> true/false 
+		tab2_columns.push({ "width":"10%"});
+		    		
 	let data_tab2 = $('#table2').DataTable({
 			    		"ordering": true,
 			    		paging: false,
@@ -66,13 +73,8 @@
 						columnDefs: [
 						    { className: 'text-center', targets: "_all" }
 						  ],
-						"columns": [
-						    null,
-						    null,
-						    { "width": "10%" },
-						  ]
+						"columns": tab2_columns
 			    	});
-
 </script>
 <script src="{% static '/garderie/js/child_list.js/' %}"></script>
 <script src="{% static '/garderie/js/embedded_form.js/' %}"></script>
