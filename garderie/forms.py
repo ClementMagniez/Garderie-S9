@@ -1,12 +1,13 @@
+from phonenumber_field.formfields import PhoneNumberField
 from django import forms
-from .models import User, Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence
 
 from django.template import Context
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
+from .models import User, Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence
 from .utils import create_parent_and_send_mail, send_mail_creation_account
-from phonenumber_field.formfields import PhoneNumberField
+from .widgets import BootstrapDateTimePickerInput
 
 
 
@@ -242,7 +243,17 @@ class NewPresenceForm(forms.ModelForm):
 
 
 class EditScheduleForm(forms.ModelForm):
-	departure=forms.CharField(required=False)
+	departure=forms.DateTimeField(
+							input_formats=['%Y-%m-%d %H:%M'],
+							widget=BootstrapDateTimePickerInput(),
+							label="Heure de départ"
+						)
+	arrival=forms.DateTimeField(
+							input_formats=['%Y-%m-%d %H:%M'],
+							widget=BootstrapDateTimePickerInput(),
+							label="Heure d'arrivée"
+						)
+
 	class Meta:
 		model=Schedule
 		fields=['arrival', 'departure']
