@@ -65,10 +65,14 @@ def get_datetime_from_hhmm(hhmm):
 	return timezone.make_aware(datetime.today().replace(hour=int(new_hhmm[0]), minute=int(new_hhmm[1])))
 	
 	
+# Utilisé par PermissionsMixin pour valider l'accès d'un parent à une vue
 def is_parent_permitted(view):
 		return view.request.user.id==view.kwargs['pk'] or view.request.user.is_superuser
 	
-	
+
+def get_config(param):
+	return models.Config.objects.get(id=0).values(param)[0]
+
 	
 ### Création de compte et envoi de mails
 	

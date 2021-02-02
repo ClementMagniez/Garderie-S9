@@ -2,8 +2,8 @@ from django.views import generic
 from django.urls import reverse_lazy
 from django.contrib.auth import decorators
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from ..forms import NewHourlyRateForm, NewUserForm, NewStaffForm, ResetPasswordForm
-from ..models import Bill, HourlyRate, Parent, User
+from ..forms import NewHourlyRateForm, NewUserForm, NewStaffForm, ResetPasswordForm, EditConfigForm
+from ..models import Bill, HourlyRate, Parent, User, Config
 from ..utils import reset_password_send_mail
 # Contient les views concernant l'administrateur du site
 
@@ -81,6 +81,19 @@ class ResetPasswordView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.Fo
 	def test_func(self):
 		return self.request.user.is_superuser
 
+class EditConfigView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.UpdateView):
+	template_name="garderie/forms/reset_password.html"
+	model=Config
+	form_class=EditConfigForm
+	success_url=reverse_lazy('admin_index')
+	
+	def get_object(self, queryset=None):
+		return Config.objects.get_config()
+
+	def test_func(self):
+		return self.request.user.is_superuser
+
+
 # Formulaire de création d'un nouvel employé
 class NewStaffView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.CreateView):
 	template_name = 'garderie/forms/new_user.html'
@@ -111,4 +124,9 @@ class BillsListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
 
 	def test_func(self):
 		return self.request.user.is_superuser
+
+	def form_valid(self, form):
+		form.save()
+		return super().form_valid(form)
+
 

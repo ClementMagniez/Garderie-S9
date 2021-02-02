@@ -4,7 +4,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.utils.translation import ugettext
 from datetime import datetime, timedelta, date, time
-from .managers import UserManager, ScheduleManager
+from .managers import UserManager, ScheduleManager, ConfigManager
 from math import ceil, floor
 from phonenumber_field.modelfields import PhoneNumberField
 import garderie.utils 
@@ -315,4 +315,12 @@ class ReliablePerson(models.Model):
 	def get_full_name(self):
 		return str(self)	
 
-	
+
+
+class Config(models.Model):
+	invoice_message=models.TextField(verbose_name="En-tête des factures")
+	phone=PhoneNumberField(verbose_name="Téléphone")
+	address=models.CharField(max_length=100, verbose_name="Adresse de la garderie")
+	name=models.CharField(max_length=50, verbose_name="Nom de la garderie")
+	objects=ConfigManager()
+

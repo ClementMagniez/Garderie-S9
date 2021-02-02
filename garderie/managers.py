@@ -1,5 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.db.models import Manager
+import garderie.models as models
+
 class UserManager(BaseUserManager):
 	use_in_migrations = True
 
@@ -25,8 +27,14 @@ class UserManager(BaseUserManager):
 
 			return self._create_user(email, password, **extra_fields)
 			
-				
-				
+class ConfigManager(Manager):
+	def get_config(self):
+		try:
+			config=super().get_queryset()[0]
+		except models.Config.DoesNotExist:
+			config=models.Config()
+			config.save()
+		return config		
 				
 
 class ScheduleManager(Manager):

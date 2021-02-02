@@ -5,7 +5,7 @@ from django.template import Context
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
-from .models import User, Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence
+from .models import User, Parent, Child, HourlyRate, Schedule, ReliablePerson, ExpectedPresence,Config
 from .utils import create_parent_and_send_mail, send_mail_creation_account
 from .widgets import BootstrapDateTimePickerInput
 
@@ -263,8 +263,6 @@ class EditScheduleForm(forms.ModelForm):
 		super().__init__(*args, **kwargs)
 
 
-
-
 class NewHourlyRateForm(forms.ModelForm):
 	class Meta:
 		model = HourlyRate
@@ -280,3 +278,9 @@ class NewHourlyRateForm(forms.ModelForm):
 			previous_rate.save()
 			new_rate.save()
 		return new_rate
+		
+class EditConfigForm(forms.ModelForm):
+	class Meta:
+		model=Config
+		fields='__all__'
+		
