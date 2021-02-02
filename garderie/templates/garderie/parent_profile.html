@@ -10,7 +10,8 @@
 			    		"order": [[ 0, "asc" ]],
 			    		"searching": false,
 			    		"columnDefs": [
-						    { "width": "80%", "targets": 0 }
+						    { "width": "80%", "targets": 0 },
+						    { className: 'text-center', targets: "_all" }
 						  ],
 						  "language": {
 						    "emptyTable": "Aucun enfant n'est enregistré",
@@ -26,7 +27,8 @@
 			    		"order": [[ 0, "asc" ]],
 			    		"searching": false,
 			    		"columnDefs": [
-						    { "width": "80%", "targets": 0 }
+						    { "width": "80%", "targets": 0 },
+						    { className: 'text-center', targets: "_all" }
 						  ],
 						  "language": {
 						    "emptyTable": "Aucune personne de confiance n'est enregistrée",
@@ -64,8 +66,9 @@
 		<table>
 		{{ personal_data_form.as_table }}
 		</table>
-
-		<input type="submit" value="Valider" class="btn btn-primary">
+		<div class="pt-3">
+		<button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Valider</button>
+	</div>
 	</form>
 
 <div class="pt-3">
@@ -156,7 +159,7 @@
 		{% endfor %}
 	</tbody>
 	</table>
-	<button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#factureModal">Détail</button>
+	<button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#factureModal"><i class="fas fa-info-circle"></i> Détail</button>
 
 </div>
 

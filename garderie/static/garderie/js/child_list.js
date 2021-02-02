@@ -13,6 +13,7 @@ function formattedDateFromString(str) {
 // Supprime un Schedule et le row associé
 function removeArrival(schedule_id, child_id) {
 
+ if(confirm('Êtes-vous sûr de vouloir le supprimer ?')){
 	$.ajax({
 		headers: { "X-CSRFToken": csrf}, 
 		type: 'POST',
@@ -30,6 +31,7 @@ function removeArrival(schedule_id, child_id) {
 			}
 		}
 	});
+ }
 }
 
 
