@@ -10,7 +10,8 @@
 			    		"order": [[ 1, "asc" ]],
 			    		"searching": false,
 			    		"columnDefs": [
-						    { "width": "10%", "targets": 0 }
+						    { "width": "10%", "targets": 0 },
+						    { className: 'text-center', targets: "_all" }
 						  ],
 						  "language": {
 						    "emptyTable": "Aucune heure de présence n'est enregistrée",
@@ -30,7 +31,10 @@
 						    "search":         "Rechercher :",
 						    "info":           "Données de _START_ à _END_ sur _TOTAL_ entrées",
     						"infoEmpty":      "Données 0 à 0 sur 0 entrée"
-						}
+						},
+						"columnDefs": [
+						   { className: 'text-center', targets: "_all" }
+						  ],
 		    		});
 
 	let csrf='{{csrf_token}}';
@@ -60,7 +64,9 @@
 		</table>
 {% if user.is_authenticated and user in child.parents or user.is_superuser %}
 		{% csrf_token %}
-		<input type="submit" value="Valider" class="btn btn-primary">
+		<div class="pt-3">
+		<button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Valider</button>
+	</div>
 {% endif %}
 	</form>
 </div>
@@ -127,7 +133,7 @@
 												<input type="submit" value="x" class="btn btn-danger btn-sm">
 										</form>
 										<div class="pl-2">
-											<button data-cid='{{child.id}}' data-sid="{{schedule.id}}" class="btn btn-secondary btn-sm button_modal">Editer</button>
+											<button data-cid='{{child.id}}' data-sid="{{schedule.id}}" class="btn btn-secondary btn-sm button_modal"><i class="fas fa-edit"></i> Editer</button>
 										</div>
 									</div>
 								</div>

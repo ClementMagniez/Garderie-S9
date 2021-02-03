@@ -1,6 +1,6 @@
 from garderie import models
 from django.utils import timezone
-from django.template.loader import get_template
+from django.template import Template, Context
 from django.core.mail import send_mail
 
 from datetime import datetime
@@ -71,18 +71,19 @@ def is_parent_permitted(view):
 	
 
 def get_config(param):
-	return models.Config.objects.get(id=0).values(param)[0]
+	return models.Config.objects.get(id=0).values(param)[0]	
 
 	
 ### Création de compte et envoi de mails
 	
 def send_mail_creation_account(mail, random_password):
-	data_context=({'id':mail, 'pw':random_password})
-	send_mail_to_user(mail, "Bienvenue sur Garderie++", 'garderie/email_welcome.txt', data_context)
+	data_context=Context({'id':mail, 'pw':random_password})
+	send_mail_to_user(mail, "Bienvenue sur Garderie++", Template(models.Config.objects.get_setting('email_welcome')), data_context)
 	
+	
+# Envoie un mail à l'adresse _mail_ formatté selon le Template _template_ et le Context _data_, avec le sujet _subject_
 def send_mail_to_user(mail, subject, template, data):
-	raw_data=get_template(template)
-	text_data=raw_data.render(data)
+	text_data=template.render(data)
 	send_mail(subject, text_data, 'a@b.com', [mail])
 
 		
@@ -99,7 +100,6 @@ def create_parent_and_send_mail(new_parent, first_name, last_name, mail):
 	new_parent.save()
 	
 	send_mail_creation_account(mail, random_password)
-
 	return new_parent
 
 
@@ -107,5 +107,5 @@ def reset_password_send_mail(user):
 	new_password=models.User.objects.make_random_password()
 	user.set_password(new_password)
 	user.save()
-	data_context={'password':new_password}
-	send_mail_to_user(user.email, "Votre nouveau mot de passe", 'garderie/email_reset_password.txt', data_context)
+	data_context=Context({'password':new_password})
+	send_mail_to_user(user.email, "Votre nouveau mot de passe", Template(models.Config.objects.get_setting('email_reset')), data_context)

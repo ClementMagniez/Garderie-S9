@@ -1,4 +1,4 @@
-from ..models import Child, HourlyRate, Schedule, Bill
+from ..models import Child, HourlyRate, Schedule, Bill, Config
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime
@@ -142,7 +142,7 @@ def AjaxChildEditArrival(request):
 
 def AjaxShowBillModal(request):
 	bill_id=request.POST.get('id', None)
-	context={'bill':Bill.objects.get(pk=bill_id)}
+	context={'bill':Bill.objects.get(pk=bill_id), 'invoice_header':Config.objects.get_setting('invoice_message')}
 	return render(request, 'garderie/include/admin_bills_modal.html', context)
 
 

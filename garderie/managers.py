@@ -35,6 +35,14 @@ class ConfigManager(Manager):
 			config=models.Config()
 			config.save()
 		return config		
+
+	def get_setting(self, param):
+		try:
+			config=super().get_queryset().values(param)[0][param]
+		except models.Config.DoesNotExist:
+			config=models.Config()
+			config.save()
+		return config		
 				
 
 class ScheduleManager(Manager):
