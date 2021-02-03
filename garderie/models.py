@@ -321,6 +321,7 @@ class Config(models.Model):
 	invoice_message=models.TextField(verbose_name="En-tête des factures")
 	email_welcome=models.TextField(verbose_name="Email de bienvenue")
 	email_reset=models.TextField(verbose_name="Email de réinitialisation de mot de passe")
+	mail=models.EmailField(verbose_name="Email de contact")
 	phone=PhoneNumberField(verbose_name="Téléphone")
 	address=models.CharField(max_length=100, verbose_name="Adresse de la garderie")
 	name=models.CharField(max_length=50, verbose_name="Nom de la garderie")

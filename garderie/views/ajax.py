@@ -142,7 +142,7 @@ def AjaxChildEditArrival(request):
 
 def AjaxShowBillModal(request):
 	bill_id=request.POST.get('id', None)
-	context={'bill':Bill.objects.get(pk=bill_id), 'invoice_header':Config.objects.get_setting('invoice_message')}
+	context={'bill':Bill.objects.get(pk=bill_id)}
 	return render(request, 'garderie/include/admin_bills_modal.html', context)
 
 

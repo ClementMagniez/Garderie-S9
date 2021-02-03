@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'garderie.context_processors.settings_processor',
             ],
         },
     },
@@ -121,6 +122,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+PHONENUBER_DB_FORMAT='NATIONAL'
+PHONENUMBER_DEFAULT_REGION='FR'
 
 CSRF_COOKIE_SECURE=False
 

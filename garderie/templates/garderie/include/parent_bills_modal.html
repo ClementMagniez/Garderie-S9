@@ -33,15 +33,19 @@
 			<div class="container">
 			  	<div class="row">
 			    	<div class="col">
-			    		Nom de la Garderie ?
+			    		{{settings.name}}
 			    	</div>
 				</div>
 				<div class="row">
 			    	<div class="col">
-			    		Adresse ?
+			    		{{settings.address}}
 			    	</div>
 				</div>
 			</div>
+			  	<div class="row">
+			    	<div class="col">
+			    		{{settings.invoice_message}}
+			    	</div>
         </div>
 				
 	{% for child in parent.all_children %}
