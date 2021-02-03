@@ -27,7 +27,6 @@ def AjaxChildCreateArrival(request):
 		
 	schedule=Schedule()
 	schedule.arrival=timezone.localtime()
-	print(timezone.localtime())
 	schedule.child=child
 	schedule.rate=HourlyRate.objects.latest('id')
 	schedule.save()
@@ -163,7 +162,6 @@ def AjaxShowChildrenHereThisDay(request):
 	for child in Child.objects.filter(schedule__arrival__date=day).distinct():
 		schedules[child]=child.schedules_this_day(day)
 	
-	print(schedules)
 	context={'schedules_dict':schedules,
 					 'day': day}
 	

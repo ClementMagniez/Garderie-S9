@@ -4,7 +4,7 @@ from ..forms import ParentUpdateForm, NewReliableForm, NewChildFormParent
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from ..utils import is_parent_permitted, EmbeddedCreateView
+from ..utils import is_parent_permitted, EmbeddedCreateView, EmbeddedUpdateView
 
 # Contient les views concernant les parents 
 
@@ -26,13 +26,14 @@ class ParentProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailV
 		context['new_child_action'] =reverse('parent_create_child', kwargs={'pk':self.kwargs['pk']})
 		context['new_reliable_form'] = NewReliableForm(pk=self.kwargs['pk'])
 		context['new_reliable_action']=reverse('parent_create_reliable', kwargs={'pk':self.kwargs['pk']})
-		context['personal_data_form'] = ParentUpdateForm(instance=User.objects.get(pk=self.kwargs['pk']),
+		context['personal_data_form'] = ParentUpdateForm(pk=self.kwargs['pk'],instance=User.objects.get(pk=self.kwargs['pk']),
 																										 initial={'phone':self.object.phone})
+		context['personal_data_action']=reverse('parent_update', kwargs={'pk':self.kwargs['pk']})
 		return context
 	
 # TODO validation et EmbeddedForm 	
 # Formulaire d'édition d'un parent donné, embedded dans ParentProfileView
-class ParentUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.edit.UpdateView):
+class ParentUpdateView(LoginRequiredMixin, UserPassesTestMixin, EmbeddedUpdateView):
 	form_class=ParentUpdateForm
 	model = User
 	

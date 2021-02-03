@@ -18,19 +18,27 @@ $(document).ready(function () {
 			url: url,
 			data: $(this).serialize(),
 			success: function(data) {
-				if (data['__all__']) {
-					form.find('.embedded_error').remove();
-					for(error in data['__all__'])
-						form.find('table').prepend('<tr class="embedded_error"><td colspan="2"><ul>'+data['__all__']+'</ul></td></tr>');
+				console.log(data);
+				if($.isEmptyObject(data)) {
+					// Traite différemment les formulaires intégrés à une modale et ceux présents directement sur la page 
+					if(form.parents('#myModal').length) {
+						$('#myModal').modal('toggle');
+					}
+					else {
+						location.reload(); 
+					} 
 				}
-					else { 
-						// Traite différemment les formulaires intégrés à une modale et ceux présents directement sur la page 
-						if(form.parents('#myModal').length) {
-							$('#myModal').modal('toggle');
+				else {
+					form.find('.embedded_error').remove();
+					form.find('table').prepend('<tr class="embedded_error">');
+					for(key in data) {
+						console.log(key);
+
+						for(let i=0;i<data[key].length;i++) {
+							console.log(data[key][i]);
+							form.find('.embedded_error').append('<td colspan="2"><ul>'+data[key][i]+'</ul></td></tr>');
 						}
-						else {
-							location.reload(); 
-						} 
+					}			
 				}
 			},
 			error: function(xhr, ajaxOptions, thrownError) {

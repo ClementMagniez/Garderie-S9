@@ -34,12 +34,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 		send_mail(subject, message, from_email, [self.email], **kwargs)
 
 	def delete(self, using=None, keep_parents=False):
-		print("dans user.delete")
 		try:
 			self.parent.delete()
 		except:
 			pass # pas de parent, rien à supprimer
-		print("fin user.delete")
 		super().delete(using, keep_parents)
 		
 

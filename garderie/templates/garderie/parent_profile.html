@@ -61,7 +61,11 @@
  <div class="bg-light p-4 border border-secondary rounded">
 	<h1>{{ parent.get_full_name}}</h1>
 	<h2>Informations personnelles</h2>
-	<form action="{% url 'parent_update' parent.uid_id  %}" method="post" class="pt-3">
+	{% include 'garderie/forms/embedded_form.html' with action=personal_data_action form=personal_data_form %}
+
+
+{% comment %}
+	<form action="" method="post" class="pt-3">
 		{% csrf_token %}
 		<table>
 		{{ personal_data_form.as_table }}
@@ -70,6 +74,11 @@
 		<button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Valider</button>
 	</div>
 	</form>
+{% endcomment %}
+
+
+
+
 
 <div class="pt-3">
 	<h2>Enfants inscrits</h2>

@@ -41,7 +41,6 @@ class EmbeddedUpdateView(UpdateView):
 		return JsonResponse(form.errors)
 	
 	def form_valid(self, form):
-		print("form_valid")
 		self.object=form.save()
 		return JsonResponse({})
 

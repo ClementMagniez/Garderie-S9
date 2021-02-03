@@ -79,6 +79,10 @@ class ParentUpdateForm(forms.ModelForm):
 		model=User
 		fields=['first_name', 'last_name', 'email']
 
+	def __init__(self, *args, **kwargs):
+		kwargs.pop('pk')
+		super().__init__(*args, **kwargs)
+	
 	def save(self, commit=True):
 		updated_user=super().save(commit=False)
 		if commit:
