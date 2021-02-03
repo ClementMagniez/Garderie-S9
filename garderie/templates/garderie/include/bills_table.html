@@ -3,27 +3,30 @@
 		<tr>
 			<th>Parent</th>
 			<th>Enfant</th>
-			<th>Date</th>
 			<th>Montant</th>
 			<th>Détails</th>
 		</tr>
 	</thead>
-	{% for bill in bills_list %}
-	<tr>
-		<td>
-			<a href="{% url 'parent_profile' bill.child.parent.uid_id %}">{{ bill.child.parent.get_full_name }}</a>
-		</td>
-		<td>
-			<a href="{% url 'child_profile' bill.child.id %}">{{ bill.child.first_name }}</a>
-		</td>
-		<td> 
-			{{bill.month | stringformat:'02d'}}/{{ bill.year}}
-		</td>
-		<td>
-			{{ bill.amount | floatformat:'2'}}€
-		</td>
-		<td> 
-<button data-bid="{{bill.id}}" class="btn btn-secondary btn-sm button_detail"><i class="fas fa-info-circle"></i> Détail</button>
-	</tr>
+	{% for keyvalue in parents_list %}
+		{% for parent, bills in keyvalue.items %}
+			{% if bills.1 %}
+				<tr>
+					<td>
+						<a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.get_full_name }}</a>
+					</td>
+					<td>
+						{% for bill in bills.0 %}
+						<a href="{% url 'child_profile' bill.child.id %}">{{ bill.child.first_name }}</a><br>
+						{% endfor %}
+					</td>
+					<td>
+						{{ bills.1 | floatformat:'2'}}€
+					</td>
+					<td> 
+						<button data-month="{{bills.0.0.month}}" data-year="{{bills.0.0.year}}" data-pid="{{parent.uid_id}}" class="btn btn-secondary btn-sm button_detail"><i class="fas fa-info-circle"></i>Détails</button>
+					</td>
+				</tr>
+			{% endif %}
+		{% endfor %}
 	{% endfor %}
 </table>

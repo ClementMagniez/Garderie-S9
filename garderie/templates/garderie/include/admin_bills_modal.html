@@ -13,17 +13,12 @@
         	<div class="container">
 			  	<div class="row">
 			    	<div class="col">
-			    		{{ bill.child.last_name}}
+			    		{{ parent.last_name|capfirst}}
 			    	</div>
 				</div>
 				<div class="row">
 			    	<div class="col">
-			    		{{bill.child.first_name}}
-			    	</div>
-				</div>
-				<div class="row pt-3">
-			    	<div class="col">
-			    		Date: {{bill.month|stringformat:'02d'}}/{{bill.year}}
+			    		{{parent.first_name|capfirst}}
 			    	</div>
 				</div>
 			</div>
@@ -53,25 +48,28 @@
 					<thead>
 						<tr>
 							<th>Date</th>
+							<th>Enfant</th>
 							<th>Heure</th>
 							<th>Montant</th>
 						</tr>
 					</thead>
-
+				{% for bill in bills.0 %}
 					{% for schedule in bill.schedule_set.all %}
 					<tbody>
 						<tr>
 							<td>{{schedule.arrival|date:'d/m'}}</td>
+							<td>{{schedule.child|title}}</td>
 							<td>{{schedule.rounded_arrival|date:'H:i'}} à {{schedule.rounded_departure|date:'H:i'}}</td>
 							<td>{{schedule.calc_amount}}€</td>
 						</tr>
 
 					{% endfor %}
 					</tbody>
+				{% endfor %}
 					<tfoot>
 						<tr>
 							<th colspan="2">Total :</th>
-							<th>{{bill.amount}}€</th>
+							<th colspan="2">{{bills.1}}€</th>
 						</tr>
 					</tfoot>
 				</table>

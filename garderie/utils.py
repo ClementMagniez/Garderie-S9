@@ -64,7 +64,7 @@ def get_config(param):
 ### Création de compte et envoi de mails
 	
 def send_mail_creation_account(mail, random_password):
-	data_context=Context({'id':mail, 'pw':random_password})
+	data_context=Context({'id':mail, 'password':random_password})
 	send_mail_to_user(mail, "Bienvenue sur Garderie++", Template(models.Config.objects.get_setting('email_welcome')), data_context)
 	
 	

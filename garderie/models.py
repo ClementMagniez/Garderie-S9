@@ -47,7 +47,6 @@ class Parent(models.Model):
 	uid=models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
 	phone=PhoneNumberField(max_length=20, null=True, verbose_name="Téléphone")
 
-
 	def __str__(self):
 		return str(self.uid.get_full_name())
 			
@@ -73,10 +72,14 @@ class Parent(models.Model):
 			child.save()
 		super().delete(using, keep_parents)
 		
-
 	# Queryset fusionnant child_set et child_set2 TODO les fusionner automatiquement ?
 	def all_children(self):
 		return self.child_set.all() | self.child_set2.all()
+
+
+	def get_bills(self, month, year):	
+		return [b for b in self.bill_set.filter(month=month, year=year)]
+
 
 class Child(models.Model):
 	parent=models.ForeignKey(Parent, on_delete=models.DO_NOTHING, related_name='child_set')
@@ -104,10 +107,8 @@ class Child(models.Model):
 		return self.schedule_set.filter(arrival__gte=datetime.today()-timedelta(days=30))
 
 	# Bill du mois courant, None s'il n'y en a pas
-	def last_bill(self):
-		today=timezone.now()
-		bills=self.bill_set.filter(year=today.year, month=today.month)
-			
+	def get_bill(self, month, year):
+		bills=self.bill_set.filter(year=year, month=month)
 		return bills[0] if bills else None
 
 
@@ -177,9 +178,9 @@ class Bill(models.Model):
 
 
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
+	parent=models.ForeignKey(Parent, on_delete=models.DO_NOTHING, verbose_name="Facture")
 	month=models.IntegerField(choices=MONTH, default=timezone.now().month, verbose_name="Mois")
 	year=models.IntegerField(choices=YEAR, default=timezone.now().year, verbose_name="Année")
-
 
 	# Renvoie la somme des Schedules associés à self
 	@property
@@ -206,7 +207,7 @@ class Schedule(models.Model):
 				bill=Bill.objects.get(child=self.child,month=self.arrival.month, 
 															year=self.arrival.year)
 			except:
-				bill=Bill(child=self.child)
+				bill=Bill(child=self.child, parent=self.child.parent)
 				bill.save()
 			self.bill=bill
 		super().save()	

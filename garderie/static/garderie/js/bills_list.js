@@ -18,13 +18,17 @@ function setDataTable() {
 		    		});
 
 	data_tab.on('click', '.button_detail',function() {
-		let bill_id=$(this).data('bid');
+		let pid=$(this).data('pid');
+		let month=$(this).data('month');
+		let year=$(this).data('year');
 		$.ajax({
 			headers: { "X-CSRFToken": csrf}, 
 			type: 'POST',
 			url: url_get_bill_modal,
 			data: {
-				'id': bill_id,
+				'id': pid,
+				'month': month,
+				'year': year,
 			},
 			dataType: 'html',
 			success: function (data) {
@@ -84,7 +88,6 @@ $(document).ready(function() {
 
 	});
 
-	//$('#datepickerFact').val("").datepicker("update");
 
 
 });

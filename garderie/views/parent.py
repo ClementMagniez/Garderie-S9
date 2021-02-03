@@ -3,6 +3,7 @@ from ..models import User, Child, Parent, ReliablePerson
 from ..forms import ParentUpdateForm, NewReliableForm, NewChildFormParent
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from ..utils import is_parent_permitted, EmbeddedCreateView, EmbeddedUpdateView
 
@@ -29,6 +30,9 @@ class ParentProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailV
 		context['personal_data_form'] = ParentUpdateForm(pk=self.kwargs['pk'],instance=User.objects.get(pk=self.kwargs['pk']),
 																										 initial={'phone':self.object.phone})
 		context['personal_data_action']=reverse('parent_update', kwargs={'pk':self.kwargs['pk']})
+		today=timezone.now()
+		context['bills']=self.object.get_bills(today.month, today.year)
+		print(context['bills'])
 		return context
 	
 # TODO validation et EmbeddedForm 	

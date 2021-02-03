@@ -1,5 +1,6 @@
 from django.views import generic
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.contrib.auth import decorators
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from ..forms import NewHourlyRateForm, NewUserForm, NewStaffForm, ResetPasswordForm, EditConfigForm
@@ -115,12 +116,21 @@ class StaffListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
 		return self.request.user.is_superuser
 
 # Liste des factures par ordre de date décroissante, fournit au HTML tous les Bills
-class BillsListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+class BillsListView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
 	template_name="garderie/bills_list.html"
-	context_object_name='bills_list'
+#	context_object_name='parents_list'
 
-	def get_queryset(self):
-		return Bill.objects.all().order_by('-month')
+#	def get_queryset(self):
+#		return Parent.objects.all().order_by()
+	
+	def get_context_data(self, **kwargs):
+		context=super().get_context_data(**kwargs)
+		today=timezone.now()
+		context['parents_list']=[]
+		for parent in Parent.objects.all():
+			bills=parent.get_bills(today.month,today.year)
+			context['parents_list'].append({parent: (bills, sum(b.amount for b in bills))})
+		return context
 
 	def test_func(self):
 		return self.request.user.is_superuser

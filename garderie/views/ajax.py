@@ -1,4 +1,4 @@
-from ..models import Child, HourlyRate, Schedule, Bill, Config
+from ..models import Child, HourlyRate, Schedule, Bill, Config, Parent
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime
@@ -140,8 +140,13 @@ def AjaxChildEditArrival(request):
 	return JsonResponse(data)
 
 def AjaxShowBillModal(request):
-	bill_id=request.POST.get('id', None)
-	context={'bill':Bill.objects.get(pk=bill_id)}
+	pid=request.POST.get('id', None)
+	parent=Parent.objects.get(pk=pid)
+	month=request.POST.get('month', None)
+	year=request.POST.get('year', None)
+	bills=parent.get_bills(month, year)
+	context={'bills':(bills,sum(b.amount for b in bills)),
+					 'parent':parent}
 	return render(request, 'garderie/include/admin_bills_modal.html', context)
 
 
@@ -180,10 +185,16 @@ def AjaxShowBills(request):
 	
 	if query=='table':
 		template='garderie/include/bills_table.html'
+		context={}
+		context['parents_list']=[]
+		for parent in Parent.objects.all():
+			bills=parent.get_bills(month,year)
+			context['parents_list'].append({parent: (bills, sum(b.amount for b in bills))})
 	elif query=='recap':
 		template='garderie/include/bills_list_modal.html'
-	bills=[b for b in Bill.objects.filter(month=month, year=year).order_by('child__last_name')]
-	context={'bills_list':bills}
+		bills=[b for b in Bill.objects.filter(month=month, year=year).order_by('child__last_name')]
+		context={'bills_list':bills}
+
 	return render(request, template, context)
 	
 	
