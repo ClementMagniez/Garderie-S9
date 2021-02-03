@@ -45,18 +45,6 @@ class EmbeddedUpdateView(UpdateView):
 		self.object=form.save()
 		return JsonResponse({})
 
-
-# Renvoie un Bill correspondant au même enfant, mois et an que schedule ;
-# s'il n'existe pas, le crée
-def get_or_create_bill(schedule):
-	try:
-		bill=models.Bill.objects.get(child=schedule.child,month=schedule.arrival.month, 
-													year=schedule.arrival.year)
-	except:
-		bill=models.Bill(child=schedule.child)
-		bill.save()
-	return bill	
-	
 	
 # Prend un string HH:MM et renvoie un objet Datetime initialisé à la date
 # du jour, avec l'heure et la minute remplacées par le paramètre

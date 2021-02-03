@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, date, time
 from .managers import UserManager, ScheduleManager, ConfigManager
 from math import ceil, floor
 from phonenumber_field.modelfields import PhoneNumberField
-import garderie.utils 
 
 	
 class User(AbstractBaseUser, PermissionsMixin):
@@ -35,10 +34,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 		send_mail(subject, message, from_email, [self.email], **kwargs)
 
 	def delete(self, using=None, keep_parents=False):
+		print("dans user.delete")
 		try:
 			self.parent.delete()
 		except:
 			pass # pas de parent, rien à supprimer
+		print("fin user.delete")
 		super().delete(using, keep_parents)
 		
 
@@ -60,14 +61,18 @@ class Parent(models.Model):
 	# car il peut en avoir un autre ; on vérifie donc à la main
 	# Le cas échéant, ce deuxième parent devient le premier, sinon l'enfant est supprimé
 	def delete(self, using=None, keep_parents=False):
+		# Cas 1 : parent principal, on le remplace par le second
 		for child in self.child_set.all():
-			print(child)
 			if child.second_parent!=None:
 				child.parent=child.second_parent
 				child.second_parent=None
 				child.save()
 			else:
 				child.delete()
+		# Cas 2 : parent secondaire, on le retire tout simplement
+		for child in self.child_set2.all():
+			child.second_parent=None
+			child.save()
 		super().delete(using, keep_parents)
 		
 
@@ -176,8 +181,7 @@ class Bill(models.Model):
 	child=models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name="Enfant associé")
 	month=models.IntegerField(choices=MONTH, default=timezone.now().month, verbose_name="Mois")
 	year=models.IntegerField(choices=YEAR, default=timezone.now().year, verbose_name="Année")
-			
-	### Méthodes de manipulation du modèle
+
 
 	# Renvoie la somme des Schedules associés à self
 	@property
@@ -196,11 +200,16 @@ class Schedule(models.Model):
 	def __str__(self):
 		return str(self.arrival)+" -- "+str(self.departure)
 		
-	# Automatise l'association du Schedule à un Bill à la création selon utils.get_or_create_bill
+	# Automatise l'association du Schedule à un Bill à la création
 	def save(self, *args, **kwargs):
 		old=Schedule.objects.filter(id=getattr(self,'id',None)).first()
-		if not old:
-			bill=garderie.utils.get_or_create_bill(self)
+		if not old: # trouve ou crée le Bill correspondant à la date de self
+			try:
+				bill=Bill.objects.get(child=self.child,month=self.arrival.month, 
+															year=self.arrival.year)
+			except:
+				bill=Bill(child=self.child)
+				bill.save()
 			self.bill=bill
 		super().save()	
 
