@@ -31,8 +31,7 @@ class ParentProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailV
 																										 initial={'phone':self.object.phone})
 		context['personal_data_action']=reverse('parent_update', kwargs={'pk':self.kwargs['pk']})
 		today=timezone.now()
-		context['bills']=self.object.get_bills(today.month, today.year)
-		print(context['bills'])
+		context['bills']=self.object.bill_set.all()
 		return context
 	
 # TODO validation et EmbeddedForm 	

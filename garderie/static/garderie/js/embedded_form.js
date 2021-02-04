@@ -18,7 +18,6 @@ $(document).ready(function () {
 			url: url,
 			data: $(this).serialize(),
 			success: function(data) {
-				console.log(data);
 				if($.isEmptyObject(data)) {
 					// Traite différemment les formulaires intégrés à une modale et ceux présents directement sur la page 
 					if(form.parents('#myModal').length) {
@@ -35,7 +34,6 @@ $(document).ready(function () {
 						console.log(key);
 
 						for(let i=0;i<data[key].length;i++) {
-							console.log(data[key][i]);
 							form.find('.embedded_error').append('<td colspan="2"><ul>'+data[key][i]+'</ul></td></tr>');
 						}
 					}			

@@ -139,15 +139,31 @@ def AjaxChildEditArrival(request):
 	}
 	return JsonResponse(data)
 
-def AjaxShowBillModal(request):
+
+def set_bill_modal_from_request(request):
 	pid=request.POST.get('id', None)
 	parent=Parent.objects.get(pk=pid)
-	month=request.POST.get('month', None)
-	year=request.POST.get('year', None)
-	bills=parent.get_bills(month, year)
+	month=request.POST.get('month', "")
+	year=request.POST.get('year', "")
+	
+	if month=="" or year=="":
+		bills=parent.bill_set.all()
+	else:		
+		bills=parent.get_bills(month, year)
 	context={'bills':(bills,sum(b.amount for b in bills)),
-					 'parent':parent}
+					 'parent':parent, 
+					 'month':month, 'year':year}
+	return context
+
+def AjaxShowBillsModalAdmin(request):
+	context=set_bill_modal_from_request(request)
 	return render(request, 'garderie/include/admin_bills_modal.html', context)
+
+def AjaxShowBillsModalParent(request):
+	context=set_bill_modal_from_request(request)
+	return render(request, 'garderie/include/parent_bills_modal.html', context)
+
+
 
 
 @decorators.user_passes_test(lambda u: u.is_superuser)
@@ -173,29 +189,56 @@ def AjaxShowChildrenHereThisDay(request):
 	return render(request, 'garderie/include/children_list_modal.html', context)
 
 
-def AjaxShowBills(request):
+# Renvoie un tuple (int, int) mois/an si request.POST.'date' est défini
+# None, None sinon
+def get_month_year_from_request(request):
 	date=request.POST.get('date', None)
-	query=request.POST.get('query', None)
 	try:
 		date=datetime.strptime(date, '%m/%Y').date()
 	except ValueError:
-		date=timezone.now().date()
-	month=date.month
-	year=date.year
+		return None, None
+
+	return date.month, date.year
+
+@decorators.user_passes_test(lambda u: u.is_superuser)
+def AjaxSwapDisplayBillsAdmin(request):
+	month, year=get_month_year_from_request(request)
 	
-	if query=='table':
-		template='garderie/include/bills_table.html'
-		context={}
-		context['parents_list']=[]
-		for parent in Parent.objects.all():
+	template='garderie/include/bills_table.html'
+	context={}
+	context['parents_list']=[]
+	for parent in Parent.objects.all():
+		if month:
 			bills=parent.get_bills(month,year)
-			context['parents_list'].append({parent: (bills, sum(b.amount for b in bills))})
-	elif query=='recap':
-		template='garderie/include/bills_list_modal.html'
-		bills=[b for b in Bill.objects.filter(month=month, year=year).order_by('child__last_name')]
-		context={'bills_list':bills}
+		else:
+			bills=parent.bill_set.all()
+		context['parents_list'].append({parent: (bills, sum(b.amount for b in bills))})
 
 	return render(request, template, context)
-	
-	
 
+
+def AjaxSwapDisplayBillsParent(request):
+	month, year=get_month_year_from_request(request)
+	pid=request.POST.get('pid', None)
+	parent=Parent.objects.get(pk=pid)
+	
+	template='garderie/include/parent_bills_table.html'
+
+	if month:
+		bills=parent.get_bills(month, year)
+	else:
+		bills=parent.bill_set.all()
+	context={'bills':bills}
+	return render(request, template, context)
+
+@decorators.user_passes_test(lambda u: u.is_superuser)
+def AjaxShowRecapPresence(request):	
+	month, year=get_month_year_from_request(request)
+	
+	template='garderie/include/bills_list_modal.html'
+	if month:
+		bills=[b for b in Bill.objects.filter(month=month, year=year).order_by('child__last_name')]
+	else:
+		bills=[b for b in Bill.objects.all().order_by('child__last_name')]
+	context={'bills_list':bills}
+	return render(request, template, context)

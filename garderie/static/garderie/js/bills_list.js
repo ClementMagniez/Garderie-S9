@@ -45,34 +45,6 @@ function setDataTable() {
 
 
 }
-// query : mot-clé arbitraire désignant ce qu'on veut faire
-// soit 'table' (remplace data_tab par un queryset filtré), soit 'recap' (affiche une modale)
-function sendDateAndGetResponse(query) {
-	$.ajax({
-		headers: { "X-CSRFToken": csrf}, 
-		type: 'POST',
-		url: url_swap_bills_display,
-		data: {
-			'date': $('#swap_bills_input').val(),
-			'query':query
-		},
-		dataType: 'html',
-		success: function (data) {
-			if(data['error'])
-				alert(data['error']);	
-			else {
-				if(query=='table') {				
-					$('#table_container').html(data);
-					setDataTable();
-				}
-				else {
-					$('#myModal').html(data);
-					$('#myModal').modal('show');
-				}
-			}
-		}
-	});
-}
 
 
 $(document).ready(function() {
@@ -80,11 +52,44 @@ $(document).ready(function() {
 	setDataTable();
 
 	$('#swap_bills_display').click(function() {
-		sendDateAndGetResponse('table');
+		$.ajax({
+			headers: { "X-CSRFToken": csrf}, 
+			type: 'POST',
+			url: url_swap_bills_display,
+			data: {
+				'date': $('#swap_bills_input').val(),
+			},
+			dataType: 'html',
+			success: function (data) {
+				if(data['error'])
+					alert(data['error']);	
+				else {
+					$('#table_container').html(data);
+					setDataTable();
+				}
+			}
+		});
+
 	});
 
 	$('#show_bills_recap').click(function() {
-		sendDateAndGetResponse('recap');
+		$.ajax({
+			headers: { "X-CSRFToken": csrf}, 
+			type: 'POST',
+			url: url_show_recap,
+			data: {
+				'date': $('#swap_bills_input').val(),
+			},
+			dataType: 'html',
+			success: function (data) {
+				if(data['error'])
+					alert(data['error']);	
+				else {
+					$('#myModal').html(data);
+					$('#myModal').modal('show');
+				}
+			}
+		});
 
 	});
 
