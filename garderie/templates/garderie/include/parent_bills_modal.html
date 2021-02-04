@@ -67,7 +67,7 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<th colspan="2">Total :</th>
+							<th colspan="3">Total :</th>
 							<th>{{bills.1}}€</th>
 						</tr>
 					</tfoot>
@@ -76,7 +76,17 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-outline-danger"><i class="far fa-file-pdf"></i> Télécharger en PDF</button>
+        <button type="button" class="btn btn-outline-danger button-download-PDF"><i class="far fa-file-pdf"></i> Télécharger en PDF</button>
       </div>
     </div>
   </div>
+  
+  
+<script>
+$(document).ready(() => {
+	$('.button-download-PDF').click(() => {
+		htmlToPdf("#modal_facture");
+	})
+
+});
+</script>

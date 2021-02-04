@@ -15,19 +15,10 @@
 	let url_get_bill_modal='{% url 'ajax_show_bill_modal' %}';
 	let url_swap_bills_display='{% url 'ajax_swap_bills_display' %}';
 	let url_show_recap='{% url 'ajax_show_recap' %}';
-
-	function demoFromHTML() {
-
-		  let pdf = new jspdf.jsPDF('p', 'pt', 'letter');
-
-		  pdf.autoTable({html:"#pdf_table"});
-		  pdf.save();
-	}
-
-
 </script>
 
 <script src="{% static '/garderie/js/bills_list.js/' %}"></script>
+<script src="{% static '/garderie/js/dl-as-pdf.js/' %}"></script>
 
 {% endblock %}
 

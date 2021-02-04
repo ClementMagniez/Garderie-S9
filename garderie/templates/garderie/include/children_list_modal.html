@@ -9,7 +9,7 @@
     <div class="modal-body border border-secondary">
 			
      <div class="container">
-      <table class="table table-striped table-bordered">
+      <table class="table table-striped table-bordered" id="topdf">
 				<thead>
 					<tr>
 						<th>Nom</th>
@@ -19,7 +19,7 @@
 					<tbody>
 						{% for child, schedules in schedules_dict.items %}
 							<tr>
-								<td><a href={% url 'child_profile' child.id %}>{{child.get_full_name}}</a></td>
+								<td><a href={% url 'child_profile' child.id %}>{{child.get_full_name|title}}</a></td>
 								<td>
 								{% for schedule in schedules %}
 									{{schedule.arrival|date:'G:i'}} -- {{schedule.departure|date:'G:i'|default:'Encore présent'}}<br/>
@@ -34,7 +34,16 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-      <button type="button" class="btn btn-outline-danger"><i class="far fa-file-pdf"></i> Télécharger en PDF</button>
+      <button type="button" class="btn btn-outline-danger button-download-PDF"><i class="far fa-file-pdf"></i> Télécharger en PDF</button>
     </div>
   </div>
 </div>
+
+<script>
+$(document).ready(() => {
+	$('.button-download-PDF').click(() => {
+		htmlToPdf("#topdf");
+	})
+
+});
+</script>

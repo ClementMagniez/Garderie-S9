@@ -42,14 +42,17 @@
 	let url_show_details='{% url 'ajax_show_bill_modal_parent'%}'
 
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.0/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@3.5.13/dist/jspdf.plugin.autotable.js"></script>
 <script src="{% static '/garderie/js/parent_bills.js/' %}"></script>
+<script src="{% static '/garderie/js/dl-as-pdf.js/' %}"></script>
 {% endblock %}
 
 {% block body %} 
 {% if user.is_authenticated and user.id == parent.uid_id or user.is_superuser %}
 <div class="d-flex justify-content-center pt-3">
  <div class="bg-light p-4 border border-secondary rounded">
-	<h1>{{ parent.get_full_name}}</h1>
+	<h1>{{ parent.get_full_name|title}}</h1>
 	<h2>Informations personnelles</h2>
 	{% include 'garderie/forms/embedded_form.html' with action=personal_data_action form=personal_data_form %}
 
@@ -84,7 +87,7 @@
 		<tr>
 			<td>
 				<a href={% url 'child_profile' child.id %}>
-					{{child.get_full_name}}
+					{{child.get_full_name|title}}
 				</a> 
 			</td>
 			<td>
@@ -113,8 +116,8 @@
 	{% for child in parent.all_children %}
 		{% for person in child.reliableperson_set.all %}
 			<tr>
-				<td>{{child.first_name}}</td>
-				<td>{{person.get_full_name}}</td>
+				<td>{{child.first_name|capfirst}}</td>
+				<td>{{person.get_full_name|title}}</td>
 				<td>
 				<form method="POST" action="{% url 'reliable_person_delete' person.id %}?next={{request.path}}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{person.get_full_name}}' + ' ?');">
 		 				{% csrf_token %}

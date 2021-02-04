@@ -44,13 +44,13 @@
 		</thead>
 		{% for parent in parent_list %}
 		<tr>
-			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.get_full_name }}</a></td>
+			<td><a href="{% url 'parent_profile' parent.uid_id %}">{{ parent.get_full_name|title}}</a></td>
 				<td>
 				{% for child in parent.all_children %} 
 					{% if forloop.counter > 1 %}
 					<br>
 					{% endif %}
-					<a href="{% url 'child_profile' child.id %}">{{ child.first_name }}</a>
+					<a href="{% url 'child_profile' child.id %}">{{ child.first_name|capfirst}}</a>
 				{% endfor %}
 				</td>
 			<td> 

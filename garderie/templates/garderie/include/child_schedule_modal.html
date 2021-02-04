@@ -8,7 +8,7 @@
       </div>
       <div class="modal-body border border-secondary">
       	<!-- Bloc en-tête info -->
-        <h4>{{ schedule.child.last_name}} {{schedule.child.first_name}}</h4>
+        <h4>{{ schedule.child.get_full_name|title}}</h4>
         <div class="d-flex justify-content-between">
         	<!-- Bloc info des parents -->
         	<div class="container">

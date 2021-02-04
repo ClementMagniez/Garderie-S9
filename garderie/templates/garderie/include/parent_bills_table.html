@@ -10,7 +10,7 @@
 			{% for bill in bills %}
 			<tr>
 				<td>
-						{{bill.child.get_full_name}}
+						{{bill.child.get_full_name|title}}
 				</td>
 				<td>
 					{{bill.month|stringformat:'02d'}}/{{bill.year}}
