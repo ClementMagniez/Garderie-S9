@@ -1,0 +1,14 @@
+{% extends 'garderie/base.html' %}
+{% block title %}Profil de {{ child.first_name}} {{child.last_name}}{% endblock %}
+{% load static %}
+
+{% block body %} 
+
+<div class="d-flex justify-content-center pt-3">
+	<div>
+	<h5 class="h5">Vous n'avez pas le droit d'être ici</h5> <br/>
+	<a href="javascript:history.go(-1)"> <u> Retour </u> </a>
+	</div>
+</div>
+
+{% endblock %}
