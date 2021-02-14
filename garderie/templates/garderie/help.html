@@ -1,0 +1,43 @@
+{% extends 'garderie/base.html' %}
+{% block title %}? Aide{{ parent.get_full_name}}{% endblock %}
+{% load static %}
+{% block scripts %}
+<script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script src="{% static '/garderie/js/pdfJS.js' %}"></script>
+{% endblock %}
+{% block body %}
+<div class="justify-content-center pt-3">
+{% if user.is_authenticated %}
+	<div class="row">
+		<div class="col d-flex justify-content-center">
+			<button class="btn btn-primary px-3" id="prev" ><i class="fas fa-caret-left"></i></button>
+			<span class="px-3">Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+			<button class="btn btn-primary px-3" id="next"><i class="fas fa-caret-right"></i></button>
+		</div>
+	</div>
+	<div class="row p-1">
+		<div class="col d-flex justify-content-center">
+			<canvas id="doc-view" class="border border-secondary"></canvas>
+		</div>
+	</div>
+	{% if user.is_superuser %}
+		<script type="text/javascript">
+			var url = "{% static 'garderie/doc/admin.pdf' %}";
+		</script>
+	{% elif user.is_staff %}
+		<script type="text/javascript">
+			var url = "{% static 'garderie/doc/staff.pdf' %}";
+		</script>
+	{% else %}
+		<script type="text/javascript">
+			var url = "{% static 'garderie/doc/parent.pdf' %}";
+		</script>
+	{% endif %}
+{% else %}
+	<div class="d-flex justify-content-center">
+		<h5> Aucune aide n'est disponible ici </h5>
+	</div>
+{% endif %}
+</div>
+{% endblock %}
+{%}
