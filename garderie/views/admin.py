@@ -140,3 +140,7 @@ class BillsListView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateVie
 		return super().form_valid(form)
 
 
+# Page d'aide, variant selon le type d'utilisateur (template vierge initialement)
+class HelpView(generic.TemplateView):
+	template_name="garderie/base.html"
+

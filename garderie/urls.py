@@ -60,5 +60,6 @@ url_redirect=[
 
 urlpatterns = [ 
         path('', views.HomeRedirectView.as_view(), name='home_redirect'),
+        path('help/', views.HelpView.as_view(), name='help'),
 ] + url_admin + url_parent + url_enfant + url_ajax + url_redirect
 
