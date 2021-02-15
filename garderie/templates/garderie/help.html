@@ -20,17 +20,30 @@
 			<canvas id="doc-view" class="border border-secondary"></canvas>
 		</div>
 	</div>
+	<div class="fixed-bottom p-3">
+		<a href="" download="" id="download_doc">
+			<button type="button" class="btn btn-primary">
+				Télécharger <i class="fas fa-download"></i>
+			</button>
+		</a>
+	</div>
 	{% if user.is_superuser %}
 		<script type="text/javascript">
 			var url = "{% static 'garderie/doc/admin.pdf' %}";
+			var a = document.getElementById('download_doc');
+			a.href = url
 		</script>
 	{% elif user.is_staff %}
 		<script type="text/javascript">
 			var url = "{% static 'garderie/doc/staff.pdf' %}";
+			var a = document.getElementById('download_doc');
+			a.href = url
 		</script>
 	{% else %}
 		<script type="text/javascript">
 			var url = "{% static 'garderie/doc/parent.pdf' %}";
+			var a = document.getElementById('download_doc');
+			a.href = url
 		</script>
 	{% endif %}
 {% else %}
