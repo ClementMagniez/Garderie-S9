@@ -22,7 +22,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 	objects=UserManager()
 	
 	def get_full_name(self):
-		return self.first_name+' '+self.last_name
+		if self.last_name!='':
+			return self.first_name+' '+self.last_name
+		else:
+			return self.email.split('@')[0].replace('.', ' ')
 
 	def __str__(self):
 		return self.get_full_name()
