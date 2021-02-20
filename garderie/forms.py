@@ -181,7 +181,7 @@ class NewChildFormParent(forms.ModelForm):
 class NewReliableForm(forms.ModelForm):
 	class Meta:
 		model = ReliablePerson
-		fields = [ 'child','first_name', 'last_name']
+		fields = [ 'child','first_name', 'last_name', 'phone']
 		
 	def __init__(self, *args, **kwargs):
 		self.pid=kwargs.pop('pk')

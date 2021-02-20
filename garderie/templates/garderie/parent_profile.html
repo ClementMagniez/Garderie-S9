@@ -109,6 +109,7 @@
 			<tr>
 				<th>Enfant</th>
 				<th>Personne</th>
+				<th>Contact</th>
 				<th>Options</th>
 			</tr>
 		</thead>
@@ -118,6 +119,7 @@
 			<tr>
 				<td>{{child.first_name|capfirst}}</td>
 				<td>{{person.get_full_name|title}}</td>
+				<td>{{person.phone|default_if_none:"N/A"}}</td>
 				<td>
 				<form method="POST" action="{% url 'reliable_person_delete' person.id %}?next={{request.path}}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer '+ '{{person.get_full_name}}' + ' ?');">
 		 				{% csrf_token %}
